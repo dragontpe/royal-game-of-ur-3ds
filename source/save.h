@@ -5,7 +5,7 @@
 #define SAVE_H
 #include <stddef.h>
 
-#define SAVE_VERSION 1
+#define SAVE_VERSION 2
 
 int save_write(const char *name, const void *data, size_t len);
 int save_read(const char *name, void *data, size_t len);     /* 0 on success */

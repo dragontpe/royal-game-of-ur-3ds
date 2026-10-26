@@ -4,7 +4,7 @@
 
 #include "draw.h"
 
-typedef enum { ILL_NONE, ILL_PATH, ILL_DICE, ILL_MOVE, ILL_SHARED, ILL_ROSETTE, ILL_CONTROLS, ILL_FORTUNE } Illus;
+typedef enum { ILL_NONE, ILL_PATH, ILL_DICE, ILL_MOVE, ILL_SHARED, ILL_ROSETTE, ILL_CONTROLS, ILL_FORTUNE, ILL_TWENTY } Illus;
 
 typedef struct {
 	const char *title, *body;
@@ -17,6 +17,7 @@ static const Page rules[] = {
 	{ "Moving", "Move one piece exactly that many squares, either a new piece or one already on the board. You can't land on your own piece, and leaving the board takes the exact number.", ILL_MOVE },
 	{ "Captures", "The middle row is shared. Land on an enemy piece there and it goes back to the start. Your first four squares and your last two are safe.", ILL_SHARED },
 	{ "Rosettes", "Land on a rosette and you throw again. The rosette in the middle is safe: a piece there can't be captured, and the other player can't land on it.", ILL_ROSETTE },
+	{ "Twenty Squares", "Same five rosettes, but a 16-square track: four of your own, then the whole long arm, which both players share. Every fourth square is a rosette; the three on the arm are safe.", ILL_TWENTY },
 	{ "Controls", "Stylus: tap Roll, then tap a ringed piece or its outlined square.\nButtons: A rolls, the D-pad picks a move, A plays it.\nSTART pauses. The game saves every turn.", ILL_CONTROLS },
 };
 
@@ -26,6 +27,7 @@ static const Page story[] = {
 	{ "The tablet", "In Babylon, on 3 November 177 BC, a scribe named Itti-Marduk-balatu copied the rules onto a clay tablet. It is the only rule book that survives. Today it is in the British Museum.", ILL_NONE },
 	{ "Pack of Dogs", "The tablet's version used five named pieces: Swallow, Storm-bird, Raven, Rooster and Eagle. Landing on a rosette promised good fortune: food, fine beer, or love in the tavern. Another copy calls the game Pack of Dogs.", ILL_NONE },
 	{ "Fortunes", "The tablet also lists twelve fortunes beside the signs of the zodiac. In this game you hear them when you land on a rosette.", ILL_FORTUNE },
+	{ "Twenty Squares", "Later the board changed shape: the bridge and the small block became one long arm off the middle row. Boards like this turn up in Egypt, the Levant, Cyprus and Crete, and Tutankhamun was buried with game boxes that carry it. This game's version is built in that Egyptian style.", ILL_NONE },
 	{ "Played again", "Irving Finkel of the British Museum read the tablet and rebuilt the rules most people play today, the ones used here. The game never quite died: Jewish families in Kochi, India, played a version of it into the 1950s.", ILL_NONE },
 };
 
@@ -117,6 +119,10 @@ static void illustrate(Illus ill)
 		break;
 	case ILL_ROSETTE:
 		spr(art_rosette_big_idx, 160 - 24, 132);
+		break;
+	case ILL_TWENTY:
+		spr(art_map_t_s_idx, 13, MY);
+		spr(art_path_t_s_idx, 13, MY);
 		break;
 	case ILL_FORTUNE:
 		text(TS_QUOTE, 160, 128, A_CENTER, "\"You will find a friend.\"");

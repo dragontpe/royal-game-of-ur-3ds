@@ -16,8 +16,8 @@ typedef struct {
 
 typedef struct {
 	bool sound, music, auto_move;
-	u8 last_level;
-	u16 wins[3], losses[3];   /* vs Beginner / Medium / Expert */
+	u8 last_level, last_board;
+	u16 wins[UR_BOARD_COUNT][3], losses[UR_BOARD_COUNT][3];   /* per board, vs Beginner / Medium / Expert */
 	u16 games_2p;
 } Settings;
 
@@ -26,7 +26,7 @@ extern Settings settings;
 enum { PLAY_RUNNING, PLAY_QUIT, PLAY_RULES };
 
 void play_init(void);
-void play_new(PlayMode mode, UrLevel level);
+void play_new(PlayMode mode, UrLevel level, int board);
 bool play_has_save(void);
 bool play_resume(void);
 int  play_update(float dt, const Input *in);     /* PLAY_* */

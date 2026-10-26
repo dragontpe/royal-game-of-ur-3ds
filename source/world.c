@@ -8,7 +8,10 @@
 
 /* Board geometry in glTF metres (asset pack board_layout.json). */
 #define BOARD_TOP 0.024f
-#define CELL_X0 -0.1316875f
+/* Column 0's centre per board: the Ur board and the 12-long Twenty Squares
+ * board are both centred on the table. */
+static const float cell_x0[UR_BOARD_COUNT] = { -0.1316875f, -0.2069375f };
+#define CELL_X0 (cell_x0[board])
 #define CELL_DX 0.037625f
 #define ROW_DZ 0.0366667f
 #define CELL_HALF 0.0188f
@@ -43,7 +46,9 @@ typedef struct {
 
 static Piece pc[2][UR_PIECES];
 static Die dice[4];
-static u8 hl[16];
+static int board;           /* UR_BOARD_UR or UR_BOARD_TWENTY */
+static int mesh_board[UR_BOARD_COUNT] = { -1, -1 };
+static u8 hl[UR_MAX_TRACK + 2];
 static int hl_player;
 static float clock_s;
 
@@ -111,10 +116,18 @@ static V3 cell_pos(int row, int col)
 	return v;
 }
 
+/* Waiting pieces fill from the entry side, borne-off pieces from the far
+ * end; the two never meet because together they are at most seven. On Ur
+ * they sit in a row in front of the board; on Twenty Squares beside the arm. */
 static V3 slot_pos(int player, bool off, int slot)
 {
-	float z = player == 0 ? ROW_Z : -ROW_Z;
-	V3 v = { off ? -SLOT_X0 - slot * SLOT_DX : SLOT_X0 + slot * SLOT_DX, 0, z };
+	float side = player == 0 ? 1.0f : -1.0f;
+	if (board == UR_BOARD_TWENTY) {
+		int col = off ? 11 - slot : 4 + slot;
+		V3 v = { CELL_X0 + col * CELL_DX, 0, side * ROW_DZ };
+		return v;
+	}
+	V3 v = { off ? -SLOT_X0 - slot * SLOT_DX : SLOT_X0 + slot * SLOT_DX, 0, side * ROW_Z };
 	return v;
 }
 
@@ -123,13 +136,11 @@ static float ground_at(float x, float z)
 {
 	int col = (int)floorf((x - CELL_X0) / CELL_DX + 0.5f);
 	int row = (int)floorf(z / ROW_DZ + 0.5f) + 1;
-	if (col < 0 || col > 7 || row < 0 || row > 2)
+	if (col < 0 || col >= UR_BOARDS[board].cols || row < 0 || row > 2)
 		return 0;
 	if (fabsf(x - (CELL_X0 + col * CELL_DX)) > CELL_HALF || fabsf(z - (row - 1) * ROW_DZ) > CELL_HALF)
 		return 0;
-	if (row != 1 && (col == 4 || col == 5))
-		return 0;
-	return BOARD_TOP;
+	return ur_cell_exists(board, row, col) ? BOARD_TOP : 0;
 }
 
 static V3 step_pos(int player, int step, int slot)
@@ -137,9 +148,9 @@ static V3 step_pos(int player, int step, int slot)
 	int row, col;
 	if (step == 0)
 		return slot_pos(player, false, slot);
-	if (step == UR_OFF)
+	if (step == UR_BOARDS[board].track + 1)
 		return slot_pos(player, true, slot);
-	ur_step_cell(player, step, &row, &col);
+	ur_step_cell(board, player, step, &row, &col);
 	return cell_pos(row, col);
 }
 
@@ -169,6 +180,10 @@ bool world_init(const Scene *s)
 			mesh_dark = n->mesh;
 		else if (n->kind == KIND_DIE)
 			mesh_die = n->mesh;
+		else if (n->kind == KIND_BOARD_UR)
+			mesh_board[UR_BOARD_UR] = i;
+		else if (n->kind == KIND_BOARD_TWENTY)
+			mesh_board[UR_BOARD_TWENTY] = i;
 	}
 	if (mesh_light < 0 || mesh_dark < 0 || mesh_die < 0)
 		return false;
@@ -187,6 +202,7 @@ bool world_init(const Scene *s)
 	mesh_quad(&decal[1], 0.5f, 1.0f, 1.0f, 0.5f);
 	mesh_quad(&decal[2], 0.0f, 0.5f, 0.5f, 0.0f);
 	mesh_quad(&decal[3], 0.5f, 0.5f, 1.0f, 0.0f);
+
 	for (int p = 0; p < 2; p++)
 		for (int i = 0; i < UR_PIECES; i++)
 			pc[p][i].yaw = (float)(i * 0.9 + p * 0.4);
@@ -196,28 +212,36 @@ bool world_init(const Scene *s)
 void world_exit(void)
 {
 	C3D_TexDelete(&decal_tex);
+
 	for (int i = 0; i < 4; i++) {
 		linearFree(decal[i].vbo);
 		linearFree(decal[i].ibo);
 	}
 }
 
+int world_board(void)
+{
+	return board;
+}
+
 void world_reset(const UrPos *p)
 {
+	board = p->board < UR_BOARD_COUNT ? p->board : UR_BOARD_UR;
+	int track = UR_BOARDS[board].track;
 	for (int pl = 0; pl < 2; pl++) {
 		int k = 0, pool = 0, off = 0;
 		for (int i = 0; i < p->pool[pl]; i++, k++) {
 			pc[pl][k].step = 0;
 			pc[pl][k].slot = pool++;
 		}
-		for (int s = 1; s <= UR_TRACK; s++)
+		for (int s = 1; s <= track; s++)
 			if (p->mask[pl] & (1u << s)) {
 				pc[pl][k].step = s;
 				pc[pl][k].slot = 0;
 				k++;
 			}
 		for (int i = 0; i < p->done[pl]; i++, k++) {
-			pc[pl][k].step = UR_OFF;
+			pc[pl][k].step = track + 1;
 			pc[pl][k].slot = off++;
 		}
 		for (int i = 0; i < UR_PIECES; i++) {
@@ -285,12 +309,13 @@ void world_move(const UrMoveResult *r)
 		s = 1;
 		path_add(q, step_pos(pl, 1, 0), 0.24f, 0.022f);
 	}
-	for (; s < r->to && s < UR_TRACK; s++)
+	int off = UR_BOARDS[board].track + 1;
+	for (; s < r->to && s < off - 1; s++)
 		path_add(q, step_pos(pl, s + 1, 0), 0.14f, 0.010f);
-	if (r->to == UR_OFF)
-		path_add(q, step_pos(pl, UR_OFF, count_step(pl, UR_OFF)), 0.30f, 0.024f);
+	if (r->to == off)
+		path_add(q, step_pos(pl, off, count_step(pl, off)), 0.30f, 0.024f);
 	q->step = r->to;
-	q->slot = r->to == UR_OFF ? count_step(pl, UR_OFF) - 1 : 0;
+	q->slot = r->to == off ? count_step(pl, off) - 1 : 0;
 
 	if (r->captured) {
 		/* the victim waits for the mover to land, then flies home */
@@ -376,7 +401,10 @@ static const bool tip_marked[4] = { true, false, false, true };
 
 void world_roll(int player, const bool marked[4])
 {
-	static const float lx[2] = { 0.0195f, 0.0555f }, lz[2] = { 0.030f, 0.052f };
+	/* Ur: in the board's notch on the roller's side; Twenty: on the table
+	 * in front of the roller, under the block. */
+	static const float lx[UR_BOARD_COUNT][2] = { { 0.0195f, 0.0555f }, { -0.170f, -0.135f } };
+	static const float lz[UR_BOARD_COUNT][2] = { { 0.030f, 0.052f }, { 0.080f, 0.102f } };
 	float side = player == 0 ? 1.0f : -1.0f;
 	for (int i = 0; i < 4; i++) {
 		Die *d = &dice[i];
@@ -397,8 +425,8 @@ void world_roll(int player, const bool marked[4])
 		q_axis(yaw, 0, 1, 0, frand() * 6.2832f);
 		q_mul(d->q, yaw, align);
 
-		d->land.x = lx[i & 1] + (frand() - 0.5f) * 0.004f;
-		d->land.z = side * (lz[i >> 1] + (frand() - 0.5f) * 0.003f);
+		d->land.x = lx[board][i & 1] + (frand() - 0.5f) * 0.004f;
+		d->land.z = side * (lz[board][i >> 1] + (frand() - 0.5f) * 0.003f);
 		d->land.y = 0;
 		d->start.x = d->land.x + (frand() - 0.5f) * 0.03f;
 		d->start.z = side * 0.115f;
@@ -509,7 +537,7 @@ void world_update(float dt)
 		die_update(&dice[i], dt);
 }
 
-void world_highlight(int player, const u8 flags[16])
+void world_highlight(int player, const u8 *flags)
 {
 	hl_player = player;
 	memcpy(hl, flags, sizeof(hl));
@@ -533,7 +561,9 @@ void world_draw(int fmt, C3D_Tex tex[][2], bool flames_on)
 
 	for (int i = 0; i < sc->node_count; i++) {
 		const Node *n = &sc->nodes[i];
-		if (n->kind == KIND_STATIC || (n->kind == KIND_FLAME && flames_on)) {
+		bool this_board = (n->kind == KIND_BOARD_UR && board == UR_BOARD_UR) ||
+		                  (n->kind == KIND_BOARD_TWENTY && board == UR_BOARD_TWENTY);
+		if (n->kind == KIND_STATIC || this_board || (n->kind == KIND_FLAME && flames_on)) {
 			const Mesh *me = &sc->meshes[n->mesh];
 			float f = 0.85f + 0.15f * sinf(clock_s * 11 + i) * sinf(clock_s * 7.3f + i * 2);
 			const float flick[4] = { 1, f, f * 0.9f, 1 };
@@ -578,7 +608,8 @@ void world_draw(int fmt, C3D_Tex tex[][2], bool flames_on)
 		}
 
 	float pulse = 0.65f + 0.35f * sinf(clock_s * 5.5f);
-	for (int s = 0; s <= UR_OFF; s++) {
+	int off = UR_BOARDS[board].track + 1;
+	for (int s = 0; s <= off; s++) {
 		if (!hl[s])
 			continue;
 		bool sel = hl[s] & HL_SELECTED;
@@ -590,9 +621,9 @@ void world_draw(int fmt, C3D_Tex tex[][2], bool flames_on)
 			}
 		}
 		if (hl[s] & HL_TARGET) {
-			V3 v = step_pos(hl_player, s, s == UR_OFF ? count_step(hl_player, UR_OFF) : 0);
+			V3 v = step_pos(hl_player, s, s == off ? count_step(hl_player, off) : 0);
 			const float red[4] = { 0.77f, 0.33f, 0.18f, sel ? 1.0f : 0.8f * pulse };
-			draw_decal(2, v.x, v.y + 0.0004f, v.z, s == UR_OFF ? 0.026f : 0.034f, red);
+			draw_decal(2, v.x, v.y + 0.0004f, v.z, s == off ? 0.026f : 0.034f, red);
 		}
 	}
 	render_decal_mode(false);

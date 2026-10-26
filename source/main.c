@@ -39,7 +39,8 @@ static C3D_Tex tex[SCENE_MAX_TEX][FMT_COUNT];
 
 #define BOARD_TOP 0.024f
 #define TOP_FOVY 30.0f
-#define TOP_HEIGHT 0.37f
+/* camera height that fits each board plus a margin across the 400 px width */
+static const float top_height[UR_BOARD_COUNT] = { 0.37f, 0.55f };
 #define ROOM_FOVY 35.224f
 
 typedef struct {
@@ -49,7 +50,8 @@ typedef struct {
 
 static Pose pose_top(void)
 {
-	Pose p = { FVec3_New(0, BOARD_TOP + TOP_HEIGHT, 0), FVec3_New(0, BOARD_TOP, 0), FVec3_New(0, 0, -1), TOP_FOVY };
+	float h = top_height[world_board()];
+	Pose p = { FVec3_New(0, BOARD_TOP + h, 0), FVec3_New(0, BOARD_TOP, 0), FVec3_New(0, 0, -1), TOP_FOVY };
 	return p;
 }
 
@@ -83,7 +85,8 @@ static Pose pose_lerp(const Pose *a, const Pose *b, float t)
 
 enum { SCR_TITLE, SCR_LEVEL, SCR_PLAY, SCR_PAGES, SCR_SETTINGS, SCR_SPLASH };
 static int screen = SCR_SPLASH, pages_return = SCR_TITLE;
-static int menu_sel = 1, level_sel, set_sel;
+static int menu_sel = 1, level_sel, set_sel, board_sel;
+static PlayMode new_mode = MODE_AI;
 static bool has_save;
 
 typedef struct {
@@ -92,11 +95,10 @@ typedef struct {
 
 static const Tile title_tiles[6] = {
 	{ "Continue", "Resume your game" }, { "Play", "vs the computer" },
-	{ "Two players", "Share one 3DS" }, { "How to play", "The rules in six pages" },
+	{ "Two players", "Share one 3DS" }, { "How to play", "Rules and controls" },
 	{ "The story", "4,500 years of Ur" }, { "Settings", "Sound and play" },
 };
 static const char *const level_name[3] = { "Beginner", "Medium", "Expert" };
-static const char *const level_sub[3] = { "Learning the game", "A fair fight", "Plays to win" };
 
 static void tile(float x, float y, float w, float h, const char *label, const char *sub, bool sel, bool dim)
 {
@@ -122,17 +124,36 @@ static void title_draw(void)
 	text(TS_BODY, 160, 226, A_CENTER, "Board after the British Museum's Ur board");
 }
 
+/* New game: pick the board, then the opponent (or Start for two players). */
+static const char *const board_label[UR_BOARD_COUNT] = { "Ur", "Twenty Squares" };
+
 static void level_draw(void)
 {
 	draw_rect(0, 0, 320, 240, COL_GROUND);
-	text(TS_TITLE, 160, 22, A_CENTER, "Choose your opponent");
-	for (int i = 0; i < 3; i++) {
-		float y = 44 + i * 52;
-		tile(16, y, 288, 44, level_name[i], level_sub[i], i == level_sel, false);
-		text(TS_TILE_SOFT, 290, y + 22, A_RIGHT, "%d won  %d lost", settings.wins[i], settings.losses[i]);
+	text(TS_TITLE, 160, 16, A_CENTER, "%s", new_mode == MODE_AI ? "New game" : "Two players");
+	for (int b = 0; b < UR_BOARD_COUNT; b++) {
+		float x = 16 + b * 148, y = 30;
+		float dy = touched_recently(x, y, 140, 62) ? 1 : 0;
+		panel(P_TILE6, x, y + dy, 140, 62);
+		size_t icon = b == UR_BOARD_UR ? art_icon_ur_idx : art_icon_twenty_idx;
+		spr(icon, x + 70 - spr_w(icon) / 2.0f, y + dy + 7);
+		text(TS_TILE, x + 70, y + dy + 50, A_CENTER, "%s", board_label[b]);
+		if (b == board_sel)
+			draw_rect(x, y + 62, 140, 3, COL_ACCENT);
 	}
-	panel_btn(P_TILE3, 16, 200, 80, 30);
-	text(TS_TILE, 56, 215, A_CENTER, "Back");
+	if (new_mode == MODE_AI) {
+		for (int i = 0; i < 3; i++) {
+			float y = 102 + i * 34;
+			tile(16, y, 288, 30, level_name[i], NULL, i == level_sel, false);
+			text(TS_TILE_SOFT, 290, y + 15, A_RIGHT, "%d won  %d lost", settings.wins[board_sel][i],
+			     settings.losses[board_sel][i]);
+		}
+	} else {
+		panel_btn(P_BTN3, 90, 118, 140, 44);
+		text(TS_BTN, 160, 140 + (touched_recently(90, 118, 140, 44) ? 1 : 0), A_CENTER, "Start");
+	}
+	panel_btn(P_TILE3, 16, 204, 80, 28);
+	text(TS_TILE, 56, 218, A_CENTER, "Back");
 }
 
 static void settings_draw(void)
@@ -220,11 +241,6 @@ static void splash_draw_bottom(void)
 	draw_fade(splash_black(), 320, 240, C2D_Color32(0, 0, 0, 255));
 }
 
-static void start_game(PlayMode mode, UrLevel level)
-{
-	play_new(mode, level);
-	screen = SCR_PLAY;
-}
 
 static void title_update(const Input *in)
 {
@@ -252,11 +268,11 @@ static void title_update(const Input *in)
 			screen = SCR_PLAY;
 		break;
 	case 1:
-		level_sel = settings.last_level;
-		screen = SCR_LEVEL;
-		break;
 	case 2:
-		start_game(MODE_2P, UR_MEDIUM);
+		new_mode = pick == 1 ? MODE_AI : MODE_2P;
+		level_sel = settings.last_level;
+		board_sel = settings.last_board;
+		screen = SCR_LEVEL;
 		break;
 	case 3:
 	case 4:
@@ -273,26 +289,42 @@ static void title_update(const Input *in)
 
 static void level_update(const Input *in)
 {
-	if (in->down & KEY_DUP)
-		level_sel = (level_sel + 2) % 3;
-	if (in->down & KEY_DDOWN)
-		level_sel = (level_sel + 1) % 3;
+	if (in->down & (KEY_DLEFT | KEY_DRIGHT | KEY_L | KEY_R)) {
+		board_sel ^= 1;
+		sfx_play(SFX_TICK, 0, 0.6f);
+	}
+	if (new_mode == MODE_AI) {
+		if (in->down & KEY_DUP)
+			level_sel = (level_sel + 2) % 3;
+		if (in->down & KEY_DDOWN)
+			level_sel = (level_sel + 1) % 3;
+	}
 	int pick = -1;
 	bool back = in->down & KEY_B;
 	if (in->down & KEY_A)
-		pick = level_sel;
+		pick = new_mode == MODE_AI ? level_sel : 0;
 	if (in->touch_down) {
-		for (int i = 0; i < 3; i++)
-			if (in_rect(in->tx, in->ty, 16, 44 + i * 52, 288, 44))
-				pick = level_sel = i;
-		back |= in_rect(in->tx, in->ty, 16, 200, 80, 30);
+		for (int b = 0; b < UR_BOARD_COUNT; b++)
+			if (in_rect(in->tx, in->ty, 16 + b * 148, 30, 140, 62)) {
+				board_sel = b;
+				sfx_play(SFX_TICK, 0, 0.6f);
+			}
+		if (new_mode == MODE_AI) {
+			for (int i = 0; i < 3; i++)
+				if (in_rect(in->tx, in->ty, 16, 102 + i * 34, 288, 30))
+					pick = level_sel = i;
+		} else if (in_rect(in->tx, in->ty, 90, 118, 140, 44)) {
+			pick = 0;
+		}
+		back |= in_rect(in->tx, in->ty, 16, 204, 80, 28);
 	}
 	if (back) {
 		sfx_play(SFX_TICK, 0, 1);
 		screen = SCR_TITLE;
 	} else if (pick >= 0) {
 		sfx_play(SFX_TICK, 0, 1);
-		start_game(MODE_AI, (UrLevel)pick);
+		play_new(new_mode, (UrLevel)(new_mode == MODE_AI ? pick : UR_MEDIUM), board_sel);
+		screen = SCR_PLAY;
 	}
 }
 
@@ -383,7 +415,7 @@ int main(void)
 
 	srand(svcGetSystemTick());
 	UrPos start;
-	ur_init(&start, 0);
+	ur_init(&start, 0, UR_BOARD_UR);
 	world_reset(&start);
 
 	C2D_TextBuf dbg_buf = C2D_TextBufNew(512);

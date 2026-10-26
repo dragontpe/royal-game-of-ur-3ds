@@ -15,7 +15,7 @@ typedef struct {
 typedef struct {
     float step;         /* per step of progress */
     float done;         /* extra for each borne-off piece */
-    float centre;       /* holding the central rosette */
+    float centre;       /* holding a safe (shared rosette) square, per square */
     float danger;       /* scale for expected loss from capture threats */
     float loss;         /* extra cost of losing a piece, on top of its progress */
     float defer;        /* danger multiplier for the side to move (it can run away) */

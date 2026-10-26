@@ -2,6 +2,18 @@
 
 const uint8_t UR_ROLL_WEIGHT[5] = { 1, 4, 6, 4, 1 };
 
+const UrBoardDef UR_BOARDS[UR_BOARD_COUNT] = {
+    { "Ur",             14,  5, 12, (1u << 4) | (1u << 8) | (1u << 14),
+                                    1u << 8, 8 },
+    { "Twenty Squares", 16,  5, 16, (1u << 4) | (1u << 8) | (1u << 12) | (1u << 16),
+                                    (1u << 8) | (1u << 12) | (1u << 16), 12 }
+};
+
+static const UrBoardDef *bd(int board)
+{
+    return &UR_BOARDS[board == UR_BOARD_TWENTY ? UR_BOARD_TWENTY : UR_BOARD_UR];
+}
+
 /* ---- RNG ---- */
 
 void ur_rng_seed(UrRng *r, uint64_t seed)
@@ -42,16 +54,32 @@ int ur_roll(UrRng *r)
 
 /* ---- position ---- */
 
-void ur_init(UrPos *p, int first_player)
+void ur_init(UrPos *p, int first_player, int board)
 {
     p->mask[0] = p->mask[1] = 0;
     p->pool[0] = p->pool[1] = UR_PIECES;
     p->done[0] = p->done[1] = 0;
     p->turn = (uint8_t)(first_player & 1);
+    p->board = (uint8_t)(board == UR_BOARD_TWENTY ? UR_BOARD_TWENTY : UR_BOARD_UR);
 }
 
-bool ur_is_rosette(int step) { return step == 4 || step == 8 || step == 14; }
-bool ur_is_shared(int step)  { return step >= UR_SHARED_LO && step <= UR_SHARED_HI; }
+int ur_off(const UrPos *p) { return bd(p->board)->track + 1; }
+
+bool ur_is_rosette(int board, int step)
+{
+    return step >= 1 && step <= UR_MAX_TRACK && ((bd(board)->rosettes >> step) & 1u);
+}
+
+bool ur_is_shared(int board, int step)
+{
+    const UrBoardDef *b = bd(board);
+    return step >= b->shared_lo && step <= b->shared_hi;
+}
+
+bool ur_is_safe(int board, int step)
+{
+    return step >= 1 && step <= UR_MAX_TRACK && ((bd(board)->safe >> step) & 1u);
+}
 
 int ur_gen_moves(const UrPos *p, int roll, UrMove out[UR_MAX_MOVES])
 {
@@ -59,19 +87,20 @@ int ur_gen_moves(const UrPos *p, int roll, UrMove out[UR_MAX_MOVES])
     if (roll < 1 || roll > 4)
         return 0;
 
-    const int me = p->turn, opp = me ^ 1;
-    const unsigned own = p->mask[me], theirs = p->mask[opp];
+    const UrBoardDef *b = bd(p->board);
+    const int me = p->turn, opp = me ^ 1, off = b->track + 1;
+    const uint32_t own = p->mask[me], theirs = p->mask[opp];
 
-    for (int from = (p->pool[me] > 0 ? 0 : 1); from <= UR_TRACK; from++) {
+    for (int from = (p->pool[me] > 0 ? 0 : 1); from <= b->track; from++) {
         if (from > 0 && !(own & (1u << from)))
             continue;
         int to = from + roll;
-        if (to > UR_OFF)
+        if (to > off)
             continue;
-        if (to < UR_OFF) {
+        if (to < off) {
             if (own & (1u << to))
                 continue;
-            if (to == UR_CENTRE && (theirs & (1u << to)))
+            if ((b->safe >> to & 1u) && (theirs & (1u << to)))
                 continue;
         }
         out[n].from = (uint8_t)from;
@@ -95,24 +124,25 @@ UrMoveResult ur_apply(UrPos *p, UrMove m, int roll)
     r.to = m.to;
     r.player = (uint8_t)me;
 
+    const UrBoardDef *b = bd(p->board);
     if (m.from == 0)
         p->pool[me]--;
     else
-        p->mask[me] &= (uint16_t)~(1u << m.from);
+        p->mask[me] &= ~(1u << m.from);
 
-    if (m.to == UR_OFF) {
+    if (m.to == b->track + 1) {
         p->done[me]++;
         r.borne_off = true;
         if (p->done[me] == UR_PIECES)
             r.winner = (int8_t)me;
     } else {
-        p->mask[me] |= (uint16_t)(1u << m.to);
-        if (ur_is_shared(m.to) && (p->mask[opp] & (1u << m.to))) {
-            p->mask[opp] &= (uint16_t)~(1u << m.to);
+        p->mask[me] |= 1u << m.to;
+        if (ur_is_shared(p->board, m.to) && (p->mask[opp] & (1u << m.to))) {
+            p->mask[opp] &= ~(1u << m.to);
             p->pool[opp]++;
             r.captured = true;
         }
-        r.extra_turn = ur_is_rosette(m.to);
+        r.extra_turn = ur_is_rosette(p->board, m.to);
     }
 
     if (!r.extra_turn)
@@ -132,7 +162,7 @@ int ur_winner(const UrPos *p)
     return -1;
 }
 
-static int popcount16(unsigned v)
+static int popcount32(uint32_t v)
 {
     int n = 0;
     while (v) { v &= v - 1; n++; }
@@ -141,18 +171,19 @@ static int popcount16(unsigned v)
 
 bool ur_pos_valid(const UrPos *p)
 {
-    const unsigned legal = 0x7FFEu;   /* bits 1..14 */
-    if (p->turn > 1)
+    if (p->turn > 1 || p->board >= UR_BOARD_COUNT)
         return false;
+    const UrBoardDef *b = bd(p->board);
+    const uint32_t legal = ((1u << (b->track + 1)) - 1u) & ~1u;   /* bits 1..track */
     for (int i = 0; i < 2; i++) {
         if (p->mask[i] & ~legal)
             return false;
-        if (p->pool[i] + p->done[i] + popcount16(p->mask[i]) != UR_PIECES)
+        if (p->pool[i] + p->done[i] + popcount32(p->mask[i]) != UR_PIECES)
             return false;
     }
     /* shared squares: never held by both sides */
-    unsigned sharedbits = 0;
-    for (int s = UR_SHARED_LO; s <= UR_SHARED_HI; s++)
+    uint32_t sharedbits = 0;
+    for (int s = b->shared_lo; s <= b->shared_hi; s++)
         sharedbits |= 1u << s;
     if (p->mask[0] & p->mask[1] & sharedbits)
         return false;
@@ -161,28 +192,46 @@ bool ur_pos_valid(const UrPos *p)
 
 /* ---- board cells ---- */
 
-bool ur_step_cell(int player, int step, int *row, int *col)
+bool ur_cell_exists(int board, int row, int col)
 {
-    int r = (player == 0) ? 2 : 0;
-    if (step < 1 || step > UR_TRACK)
+    const UrBoardDef *b = bd(board);
+    if (row < 0 || row > 2 || col < 0 || col >= b->cols)
         return false;
-    if (step <= 4)       { *row = r; *col = 4 - step; }
-    else if (step <= 12) { *row = 1; *col = step - 5; }
-    else                 { *row = r; *col = (step == 13) ? 7 : 6; }
+    if (row == 1)
+        return true;
+    if (col <= 3)
+        return true;
+    /* Ur only: the outer rows also have cols 6 and 7 */
+    return b->track == 14 && col >= 6;
+}
+
+bool ur_step_cell(int board, int player, int step, int *row, int *col)
+{
+    const UrBoardDef *b = bd(board);
+    int r = (player == 0) ? 2 : 0;
+    if (step < 1 || step > b->track)
+        return false;
+    if (step <= 4)                *row = r, *col = 4 - step;
+    else if (step <= 12 || b->track == 16)
+                                  *row = 1, *col = step - 5;
+    else                          *row = r, *col = (step == 13) ? 7 : 6;
     return true;
 }
 
-int ur_cell_step(int player, int row, int col)
+int ur_cell_step(int board, int player, int row, int col)
 {
+    const UrBoardDef *b = bd(board);
     int r = (player == 0) ? 2 : 0;
-    if (col < 0 || col > 7 || row < 0 || row > 2)
+    if (!ur_cell_exists(board, row, col))
         return -1;
     if (row == 1)
         return col + 5;
     if (row != r)
         return -1;
     if (col <= 3) return 4 - col;
-    if (col == 6) return 14;
-    if (col == 7) return 13;
+    if (b->track == 14) {
+        if (col == 6) return 14;
+        if (col == 7) return 13;
+    }
     return -1;
 }

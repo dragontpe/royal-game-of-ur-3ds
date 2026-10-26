@@ -7,6 +7,7 @@
 #include "../game/ur_ai.h"
 
 static int g_checks = 0, g_fail = 0;
+static int g_board = UR_BOARD_UR;   /* board used by mk() and the board-agnostic tests */
 #define CHECK(c) do { g_checks++; if (!(c)) { g_fail++; \
     printf("FAIL %s:%d: %s\n", __FILE__, __LINE__, #c); } } while (0)
 
@@ -14,9 +15,9 @@ static int g_checks = 0, g_fail = 0;
 static UrPos mk(int turn, const int *a, int na, int done_a, const int *b, int nb, int done_b)
 {
     UrPos p;
-    ur_init(&p, turn);
-    for (int i = 0; i < na; i++) p.mask[0] |= (uint16_t)(1u << a[i]);
-    for (int i = 0; i < nb; i++) p.mask[1] |= (uint16_t)(1u << b[i]);
+    ur_init(&p, turn, g_board);
+    for (int i = 0; i < na; i++) p.mask[0] |= 1u << a[i];
+    for (int i = 0; i < nb; i++) p.mask[1] |= 1u << b[i];
     p.done[0] = (uint8_t)done_a; p.done[1] = (uint8_t)done_b;
     p.pool[0] = (uint8_t)(UR_PIECES - na - done_a);
     p.pool[1] = (uint8_t)(UR_PIECES - nb - done_b);
@@ -41,7 +42,7 @@ static int count_moves(const UrPos *p, int roll)
 static void test_init_and_dice(void)
 {
     UrPos p;
-    ur_init(&p, 1);
+    ur_init(&p, 1, g_board);
     CHECK(p.turn == 1 && p.pool[0] == 7 && p.pool[1] == 7 && p.mask[0] == 0 && p.mask[1] == 0);
     CHECK(ur_pos_valid(&p));
     CHECK(count_moves(&p, 0) == 0);
@@ -204,7 +205,7 @@ static void test_bearoff_and_blocking(void)
 static void test_pass_and_extra_roll(void)
 {
     UrPos p;
-    ur_init(&p, 0);
+    ur_init(&p, 0, g_board);
     CHECK(count_moves(&p, 0) == 0);
     ur_pass(&p);
     CHECK(p.turn == 1);
@@ -258,34 +259,34 @@ static void test_cells(void)
         int seen[3][8];
         memset(seen, 0, sizeof seen);
         int row, col;
-        CHECK(!ur_step_cell(pl, 0, &row, &col));
-        CHECK(!ur_step_cell(pl, 15, &row, &col));
+        CHECK(!ur_step_cell(0, pl, 0, &row, &col));
+        CHECK(!ur_step_cell(0, pl, 15, &row, &col));
         for (int s = 1; s <= 14; s++) {
-            CHECK(ur_step_cell(pl, s, &row, &col));
+            CHECK(ur_step_cell(0, pl, s, &row, &col));
             CHECK(row >= 0 && row <= 2 && col >= 0 && col <= 7);
             CHECK(!(row != 1 && (col == 4 || col == 5)));     /* those cells don't exist */
-            CHECK(ur_cell_step(pl, row, col) == s);
+            CHECK(ur_cell_step(0, pl, row, col) == s);
             seen[row][col]++;
         }
         for (int r = 0; r < 3; r++)
             for (int c = 0; c < 8; c++) CHECK(seen[r][c] <= 1);
         /* cells that aren't on this track */
         int other = (pl == 0) ? 0 : 2;
-        for (int c = 0; c < 8; c++) CHECK(ur_cell_step(pl, other, c) == -1);
-        CHECK(ur_cell_step(pl, 1, -1) == -1 && ur_cell_step(pl, 3, 0) == -1);
+        for (int c = 0; c < 8; c++) CHECK(ur_cell_step(0, pl, other, c) == -1);
+        CHECK(ur_cell_step(0, pl, 1, -1) == -1 && ur_cell_step(0, pl, 3, 0) == -1);
         /* rosette cells: (r,0), (1,3), (r,6) */
         int r = (pl == 0) ? 2 : 0;
-        CHECK(ur_step_cell(pl, 4, &row, &col) && row == r && col == 0);
-        CHECK(ur_step_cell(pl, 8, &row, &col) && row == 1 && col == 3);
-        CHECK(ur_step_cell(pl, 14, &row, &col) && row == r && col == 6);
-        CHECK(ur_step_cell(pl, 1, &row, &col) && row == r && col == 3);
-        CHECK(ur_step_cell(pl, 13, &row, &col) && row == r && col == 7);
+        CHECK(ur_step_cell(0, pl, 4, &row, &col) && row == r && col == 0);
+        CHECK(ur_step_cell(0, pl, 8, &row, &col) && row == 1 && col == 3);
+        CHECK(ur_step_cell(0, pl, 14, &row, &col) && row == r && col == 6);
+        CHECK(ur_step_cell(0, pl, 1, &row, &col) && row == r && col == 3);
+        CHECK(ur_step_cell(0, pl, 13, &row, &col) && row == r && col == 7);
     }
     /* shared squares: both players map step s (5..12) to the same cell */
     for (int s = 5; s <= 12; s++) {
         int r0, c0, r1, c1;
-        ur_step_cell(0, s, &r0, &c0);
-        ur_step_cell(1, s, &r1, &c1);
+        ur_step_cell(0, 0, s, &r0, &c0);
+        ur_step_cell(0, 1, s, &r1, &c1);
         CHECK(r0 == 1 && r1 == 1 && c0 == c1 && c0 == s - 5);
     }
 }
@@ -299,20 +300,23 @@ static void check_invariants(const UrPos *p)
     CHECK(ur_pos_valid(p));
     for (int i = 0; i < 2; i++) {
         int n = 0;
-        for (int s = 1; s <= 14; s++) n += (p->mask[i] >> s) & 1;
+        for (int s = 1; s <= UR_MAX_TRACK; s++) n += (p->mask[i] >> s) & 1;
         CHECK(n + p->pool[i] + p->done[i] == 7);
+        CHECK((p->mask[i] >> (ur_off(p))) == 0 && !(p->mask[i] & 1u));   /* only bits 1..track */
     }
-    CHECK(((p->mask[0] & p->mask[1]) & 0x1FE0u) == 0);   /* bits 5..12 */
+    /* literal expectations: shared steps are 5..12 (Ur) or 5..16 (Twenty) */
+    uint32_t sh = (p->board == UR_BOARD_UR) ? 0x1FE0u : 0x1FFE0u;
+    CHECK(((p->mask[0] & p->mask[1]) & sh) == 0);
 }
 
-static FuzzStats fuzz(int games, uint64_t seed)
+static FuzzStats fuzz(int board, int games, uint64_t seed)
 {
     FuzzStats st = {0};
     UrRng rng;
     ur_rng_seed(&rng, seed);
     for (int g = 0; g < games; g++) {
         UrPos p;
-        ur_init(&p, (int)(ur_rng_u32(&rng) & 1));
+        ur_init(&p, (int)(ur_rng_u32(&rng) & 1), board);
         long turns = 0;
         while (ur_winner(&p) < 0) {
             int roll = ur_roll(&rng);
@@ -336,8 +340,17 @@ static FuzzStats fuzz(int games, uint64_t seed)
             st.moves++;
             st.captures += r.captured; st.extras += r.extra_turn; st.bearoffs += r.borne_off;
             CHECK(r.extra_turn == (p.turn == before.turn && r.winner < 0));
-            CHECK(r.extra_turn == (m.to == 4 || m.to == 8 || m.to == 14));
-            CHECK(r.captured == (m.to >= 5 && m.to <= 12 && m.to != 8 && (before.mask[before.turn ^ 1] & (1u << m.to))));
+            {
+                int off = board == UR_BOARD_UR ? 15 : 17;
+                bool ros = board == UR_BOARD_UR ? (m.to == 4 || m.to == 8 || m.to == 14)
+                                                : (m.to == 4 || m.to == 8 || m.to == 12 || m.to == 16);
+                int hi = board == UR_BOARD_UR ? 12 : 16;
+                bool safe = board == UR_BOARD_UR ? (m.to == 8) : (m.to == 8 || m.to == 12 || m.to == 16);
+                CHECK(m.to <= off && m.from + roll == m.to);
+                CHECK(r.extra_turn == ros);
+                CHECK(r.captured == (m.to >= 5 && m.to <= hi && !safe && (before.mask[before.turn ^ 1] & (1u << m.to))));
+                CHECK(!safe || !(before.mask[before.turn ^ 1] & (1u << m.to)));   /* never moved onto an enemy on a safe square */
+            }
             CHECK(p.pool[before.turn ^ 1] == before.pool[before.turn ^ 1] + r.captured);
         }
         int w = ur_winner(&p);
@@ -357,7 +370,7 @@ static void test_ai_basic(void)
     /* always returns a legal move, at every level, on fuzzed positions */
     for (int g = 0; g < 300; g++) {
         UrPos p;
-        ur_init(&p, g & 1);
+        ur_init(&p, g & 1, g_board);
         while (ur_winner(&p) < 0) {
             int roll = ur_roll(&rng);
             UrMove mv[UR_MAX_MOVES];
@@ -376,10 +389,11 @@ static void test_ai_basic(void)
     }
 
     /* expert takes an immediate win */
-    int a[] = {13}, b[] = {9, 10, 11};
+    int fin = UR_BOARDS[g_board].track - 1;
+    int a[] = {fin}, b[] = {9, 10, 11};
     UrPos p = mk(0, a, 1, 6, b, 3, 0);
     UrMove m = ur_ai_choose(&p, 2, UR_EXPERT, &rng, NULL);
-    CHECK(m.from == 13 && m.to == 15);
+    CHECK(m.from == fin && m.to == fin + 2);
 
     /* expert captures an advanced piece rather than shuffling a back piece */
     int a3[] = {7, 1}, b3[] = {9};
@@ -400,7 +414,7 @@ static void test_pruning_equivalence(void)
     long full_nodes = 0, pruned_nodes = 0;
     for (int g = 0; g < 40; g++) {
         UrPos p;
-        ur_init(&p, g & 1);
+        ur_init(&p, g & 1, g_board);
         int steps = (int)ur_rng_below(&rng, 60);
         while (ur_winner(&p) < 0 && steps-- > 0) {
             int roll = ur_roll(&rng);
@@ -425,6 +439,190 @@ static void test_pruning_equivalence(void)
            tested, worst, full_nodes, pruned_nodes);
 }
 
+/* ---- Twenty Squares ---- */
+
+static void test_twenty_rules(void)
+{
+    g_board = UR_BOARD_TWENTY;
+    UrPos p;
+    ur_init(&p, 0, UR_BOARD_TWENTY);
+    CHECK(p.board == UR_BOARD_TWENTY && ur_off(&p) == 17 && ur_pos_valid(&p));
+    CHECK(strcmp(UR_BOARDS[1].name, "Twenty Squares") == 0 && UR_BOARDS[1].cols == 12);
+
+    /* table queries, literal lists */
+    for (int s = 0; s <= 17; s++) {
+        bool ros = (s == 4 || s == 8 || s == 12 || s == 16);
+        bool shr = (s >= 5 && s <= 16);
+        CHECK(ur_is_rosette(1, s) == ros);
+        CHECK(ur_is_shared(1, s) == shr);
+        CHECK(ur_is_safe(1, s) == (s == 8 || s == 12 || s == 16));
+        bool uros = (s == 4 || s == 8 || s == 14);
+        CHECK(ur_is_rosette(0, s) == uros);
+        CHECK(ur_is_shared(0, s) == (s >= 5 && s <= 12));
+        CHECK(ur_is_safe(0, s) == (s == 8));
+    }
+
+    /* each rosette gives an extra roll; 4 is private, the rest shared */
+    int rs[] = {4, 8, 12, 16};
+    for (int i = 0; i < 4; i++) {
+        int a[] = {rs[i] - 1};
+        p = mk(0, a, 1, 0, NULL, 0, 0);
+        UrMoveResult r = ur_apply(&p, (UrMove){(uint8_t)(rs[i] - 1), (uint8_t)rs[i]}, 1);
+        CHECK(r.extra_turn && p.turn == 0 && !r.captured && (p.mask[0] & (1u << rs[i])));
+    }
+    /* non-rosettes switch turn: 13, 14, 15 are plain shared squares here */
+    for (int s = 13; s <= 15; s++) {
+        int a[] = {s - 1};
+        p = mk(0, a, 1, 0, NULL, 0, 0);
+        UrMoveResult r = ur_apply(&p, (UrMove){(uint8_t)(s - 1), (uint8_t)s}, 1);
+        CHECK(!r.extra_turn && p.turn == 1);
+    }
+
+    /* safe rosettes 8, 12 and 16: an enemy there blocks the move, for both players */
+    int safes[] = {8, 12, 16};
+    for (int i = 0; i < 3; i++) {
+        int s = safes[i];
+        for (int pl = 0; pl < 2; pl++) {
+            int mine[] = {s - 2}, theirs[] = {s};
+            UrPos q = pl == 0 ? mk(0, mine, 1, 0, theirs, 1, 0) : mk(1, theirs, 1, 0, mine, 1, 0);
+            CHECK(!has_move(&q, 2, s - 2, s));
+            CHECK(has_move(&q, 1, s - 2, s - 1));
+        }
+        /* with the safe square empty the move is fine; with my own piece it is blocked */
+        int mine[] = {s - 2};
+        p = mk(0, mine, 1, 0, NULL, 0, 0);
+        CHECK(has_move(&p, 2, s - 2, s));
+        int own[] = {s - 2, s};
+        p = mk(0, own, 2, 0, NULL, 0, 0);
+        CHECK(!has_move(&p, 2, s - 2, s));
+    }
+    /* entering from the pool onto the private rosette 4 */
+    p = mk(0, NULL, 0, 0, NULL, 0, 0);
+    CHECK(has_move(&p, 4, 0, 4));
+    {
+        UrMoveResult r = ur_apply(&p, (UrMove){0, 4}, 4);
+        CHECK(r.extra_turn && p.turn == 0);
+    }
+    /* step 4 is private: same step number held by both is fine */
+    int a4[] = {3}, b4[] = {4};
+    p = mk(0, a4, 1, 0, b4, 1, 0);
+    CHECK(has_move(&p, 1, 3, 4));
+    CHECK(!ur_apply(&p, (UrMove){3, 4}, 1).captured);
+
+    /* captures on every non-safe shared square 5..16 */
+    for (int s = 5; s <= 16; s++) {
+        if (s == 8 || s == 12 || s == 16) continue;
+        for (int pl = 0; pl < 2; pl++) {
+            int mine[] = {s - 1}, theirs[] = {s};
+            UrPos q = pl == 0 ? mk(0, mine, 1, 0, theirs, 1, 0) : mk(1, theirs, 1, 0, mine, 1, 0);
+            CHECK(has_move(&q, 1, s - 1, s));
+            UrMoveResult r = ur_apply(&q, (UrMove){(uint8_t)(s - 1), (uint8_t)s}, 1);
+            CHECK(r.captured && !r.extra_turn && q.pool[pl ^ 1] == 7 && q.mask[pl ^ 1] == 0);
+            CHECK(ur_pos_valid(&q));
+        }
+    }
+
+    /* exact bear-off at 17 */
+    int a[] = {16, 15, 14, 13};
+    p = mk(0, a, 4, 0, NULL, 0, 0);
+    CHECK(has_move(&p, 1, 16, 17));
+    CHECK(!has_move(&p, 2, 16, 18));
+    CHECK(has_move(&p, 2, 15, 17));
+    CHECK(has_move(&p, 3, 14, 17));
+    CHECK(has_move(&p, 4, 13, 17));
+    CHECK(!has_move(&p, 4, 14, 18) && !has_move(&p, 3, 15, 18) && !has_move(&p, 2, 16, 18));
+    CHECK(!has_move(&p, 1, 15, 16));   /* own piece */
+    {
+        UrMoveResult r = ur_apply(&p, (UrMove){16, 17}, 1);
+        CHECK(r.borne_off && !r.extra_turn && p.turn == 1 && p.done[0] == 1 && !(p.mask[0] & (1u << 16)));
+        CHECK(!(p.mask[0] & (1u << 17)));
+    }
+    /* last piece off wins */
+    int w[] = {15};
+    p = mk(1, NULL, 0, 0, w, 1, 6);
+    CHECK(ur_apply(&p, (UrMove){15, 17}, 2).winner == 1 && ur_winner(&p) == 1);
+    /* lone last piece on 16: only a 1 moves */
+    int l[] = {16};
+    p = mk(0, l, 1, 6, NULL, 0, 0);
+    CHECK(count_moves(&p, 1) == 1 && count_moves(&p, 2) == 0 && count_moves(&p, 3) == 0 && count_moves(&p, 4) == 0);
+    /* a pos with a bit above the track is invalid; so is a shared overlap on 16 */
+    p = mk(0, NULL, 0, 0, NULL, 0, 0);
+    p.mask[0] = 1u << 17; p.pool[0] = 6;
+    CHECK(!ur_pos_valid(&p));
+    int o1[] = {16}, o2[] = {16};
+    p = mk(0, o1, 1, 0, o2, 1, 0);
+    CHECK(!ur_pos_valid(&p));
+    /* on the Ur board step 15/16 do not exist */
+    p = mk(0, NULL, 0, 0, NULL, 0, 0);
+    p.board = UR_BOARD_UR; p.mask[0] = 1u << 15; p.pool[0] = 6;
+    CHECK(!ur_pos_valid(&p));
+    g_board = UR_BOARD_UR;
+}
+
+static void test_cells_all(void)
+{
+    /* the 3x12 cells of Twenty Squares: rows 0, 2 cols 0-3, row 1 cols 0-11 */
+    for (int r = -1; r <= 3; r++)
+        for (int c = -1; c <= 12; c++) {
+            bool want = r >= 0 && r <= 2 && c >= 0 && c <= 11 && (r == 1 || c <= 3);
+            CHECK(ur_cell_exists(1, r, c) == want);
+            bool uwant = r >= 0 && r <= 2 && c >= 0 && c <= 7 && (r == 1 || c <= 3 || c >= 6);
+            CHECK(ur_cell_exists(0, r, c) == uwant);
+        }
+    int n = 0;
+    for (int r = 0; r < 3; r++) for (int c = 0; c < 12; c++) n += ur_cell_exists(1, r, c);
+    CHECK(n == 20);
+    n = 0;
+    for (int r = 0; r < 3; r++) for (int c = 0; c < 8; c++) n += ur_cell_exists(0, r, c);
+    CHECK(n == 20);
+
+    for (int pl = 0; pl < 2; pl++) {
+        int r0 = pl == 0 ? 2 : 0, row, col;
+        int seen[3][12];
+        memset(seen, 0, sizeof seen);
+        CHECK(!ur_step_cell(1, pl, 0, &row, &col) && !ur_step_cell(1, pl, 17, &row, &col));
+        for (int s = 1; s <= 16; s++) {
+            CHECK(ur_step_cell(1, pl, s, &row, &col));
+            CHECK(ur_cell_exists(1, row, col));
+            CHECK(ur_cell_step(1, pl, row, col) == s);
+            seen[row][col]++;
+            /* literal cell list */
+            if (s <= 4) CHECK(row == r0 && col == 4 - s);
+            else        CHECK(row == 1 && col == s - 5);
+        }
+        for (int r = 0; r < 3; r++) for (int c = 0; c < 12; c++) CHECK(seen[r][c] <= 1);
+        int other = pl == 0 ? 0 : 2;
+        for (int c = -1; c < 13; c++) CHECK(ur_cell_step(1, pl, other, c) == -1);
+        CHECK(ur_cell_step(1, pl, 1, 12) == -1 && ur_cell_step(1, pl, 3, 0) == -1);
+        /* the outer row cols 4..11 of the player's own row do not exist */
+        for (int c = 4; c < 12; c++) CHECK(ur_cell_step(1, pl, r0, c) == -1);
+        /* rosette cells: (r,0) (1,3) (1,7) (1,11) */
+        for (int s = 1; s <= 16; s++) {
+            ur_step_cell(1, pl, s, &row, &col);
+            bool cell_ros = (row == r0 && col == 0) || (row == 1 && (col == 3 || col == 7 || col == 11));
+            CHECK(cell_ros == ur_is_rosette(1, s));
+        }
+    }
+    for (int s = 5; s <= 16; s++) {
+        int a, b, c, d;
+        ur_step_cell(1, 0, s, &a, &b);
+        ur_step_cell(1, 1, s, &c, &d);
+        CHECK(a == 1 && c == 1 && b == d && b == s - 5);
+    }
+    /* Ur rosette cells for both players */
+    for (int pl = 0; pl < 2; pl++) {
+        int r0 = pl == 0 ? 2 : 0, row, col;
+        int cnt = 0;
+        for (int s = 1; s <= 14; s++) {
+            ur_step_cell(0, pl, s, &row, &col);
+            bool cell_ros = (row == r0 && (col == 0 || col == 6)) || (row == 1 && col == 3);
+            CHECK(cell_ros == ur_is_rosette(0, s));
+            cnt += cell_ros;
+        }
+        CHECK(cnt == 3);
+    }
+}
+
 int main(int argc, char **argv)
 {
     int fuzz_games = 20000;
@@ -439,18 +637,27 @@ int main(int argc, char **argv)
     test_extra_roll_dead();
     test_win();
     test_cells();
+    test_twenty_rules();
+    test_cells_all();
     int unit_checks = g_checks, unit_fail = g_fail;
     printf("unit tests: %d checks, %d failed\n", unit_checks, unit_fail);
 
-    FuzzStats st = fuzz(fuzz_games, 20261026);
-    printf("fuzz: %ld games, %ld rolls, %ld moves, %ld passes, %ld captures, %ld extra rolls, %ld bear-offs, longest game %ld rolls\n",
-           st.games, st.turns, st.moves, st.passes, st.captures, st.extras, st.bearoffs, st.maxturns);
-    printf("fuzz checks: %d checks, %d failed\n", g_checks - unit_checks, g_fail - unit_fail);
+    for (int b = 0; b < UR_BOARD_COUNT; b++) {
+        int c0 = g_checks, f0 = g_fail;
+        FuzzStats st = fuzz(b, fuzz_games, 20261026 + b);
+        printf("fuzz %s: %ld games, %ld rolls, %ld moves, %ld passes, %ld captures, %ld extra rolls, %ld bear-offs, longest game %ld rolls\n",
+               UR_BOARDS[b].name, st.games, st.turns, st.moves, st.passes, st.captures, st.extras, st.bearoffs, st.maxturns);
+        printf("fuzz %s checks: %d checks, %d failed\n", UR_BOARDS[b].name, g_checks - c0, g_fail - f0);
+    }
 
-    int before = g_checks, bf = g_fail;
-    test_ai_basic();
-    test_pruning_equivalence();
-    printf("ai tests: %d checks, %d failed\n", g_checks - before, g_fail - bf);
+    for (int b = 0; b < UR_BOARD_COUNT; b++) {
+        g_board = b;
+        int before = g_checks, bf = g_fail;
+        test_ai_basic();
+        test_pruning_equivalence();
+        printf("ai tests (%s): %d checks, %d failed\n", UR_BOARDS[b].name, g_checks - before, g_fail - bf);
+    }
+    g_board = UR_BOARD_UR;
 
     printf("TOTAL: %d checks, %d failed\n", g_checks, g_fail);
     return g_fail ? 1 : 0;

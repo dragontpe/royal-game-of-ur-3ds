@@ -115,3 +115,44 @@ def board_map(c, ox, oy, inlay, square, cell=CELL):
                 rosette(c, x + (cell - 3) / 2, y + (cell - 3) / 2, 13.5 * cell / CELL, LAPIS, CARNELIAN, CARNELIAN)
             else:
                 motif(c, MOTIFS[r][col], x, y, cell - 3, square)
+
+
+# ---- Twenty Squares (aseb) board: Egyptian look ----
+EBONY = (42, 29, 20)
+IVORY = (232, 220, 190)
+IVORY_LO = (206, 190, 152)
+EG_BLUE = (31, 111, 168)
+EG_GOLD = (201, 160, 67)
+TWENTY_ROSETTES = {(0, 0), (2, 0), (1, 3), (1, 7), (1, 11)}
+
+
+def twenty_exists(r, col):
+    return col < 4 or r == 1
+
+
+def eg_rosette(c, cx, cy, r):
+    """Faience rosette: eight Egyptian-blue petals, gold heart and ring."""
+    c.circle(cx, cy, r, EG_GOLD)
+    c.circle(cx, cy, r - max(0.8, r * 0.09), IVORY)
+    rosette(c, cx, cy, r * 0.86, EG_BLUE, EG_BLUE, EG_GOLD)
+
+
+def twenty_map(c, ox, oy, cell, frame=EBONY):
+    """Flat Egyptian twenty-squares board; (ox, oy) = top-left of cell (0,0)."""
+    pad = max(2, cell * 0.09)
+    c.rect(ox - pad, oy - pad, 4 * cell + 2 * pad, 3 * cell + 2 * pad, frame, r=pad)
+    c.rect(ox + 4 * cell - pad, oy + cell - pad, 8 * cell + 2 * pad, cell + 2 * pad, frame, r=pad)
+    gap = max(1.0, cell * 0.07)
+    for r in range(3):
+        for col in range(12):
+            if not twenty_exists(r, col):
+                continue
+            x, y = ox + col * cell + gap / 2, oy + r * cell + gap / 2
+            s = cell - gap
+            c.rect(x, y, s, s, IVORY, r=max(1, cell * 0.05))
+            if (r, col) in TWENTY_ROSETTES:
+                eg_rosette(c, x + s / 2, y + s / 2, s * 0.42)
+            else:
+                inset = s * 0.12
+                c.rect(x + inset, y + inset, s - 2 * inset, s - 2 * inset, None, r=max(1, cell * 0.04),
+                       outline=IVORY_LO, width=max(0.6, cell * 0.035))

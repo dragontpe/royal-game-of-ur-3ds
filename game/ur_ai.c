@@ -18,27 +18,40 @@ static const float PROB[5] = { 1.0f / 16, 4.0f / 16, 6.0f / 16, 4.0f / 16, 1.0f 
 
 /* ---- evaluation ---- */
 
+/* Progress is weighted per step relative to the board's track (14 / track), so a whole trip
+   round the board is worth the same on both boards. Exactly 1.0 on Ur. */
+static float step_weight(const UrPos *p, const UrEvalW *w)
+{
+    return w->step * (14.0f / (float)UR_BOARDS[p->board].track);
+}
+
 static float side_score(const UrPos *p, int x, const UrEvalW *w)
 {
+    const UrBoardDef *b = &UR_BOARDS[p->board];
+    const float sw = step_weight(p, w);
     float s = 0;
-    unsigned m = p->mask[x];
-    for (int st = 1; st <= UR_TRACK; st++)
-        if (m & (1u << st))
-            s += st * w->step;
-    s += p->done[x] * (UR_OFF * w->step + w->done);
-    if (m & (1u << UR_CENTRE))
-        s += w->centre;
+    uint32_t m = p->mask[x];
+    for (int st = 1; st <= b->track; st++) {
+        if (m & (1u << st)) {
+            s += st * sw;
+            if ((b->safe >> st) & 1u)
+                s += w->centre;          /* holding a safe square */
+        }
+    }
+    s += p->done[x] * ((b->track + 1) * sw + w->done);
     s -= p->pool[x] * w->pool;
     return s;
 }
 
-/* Expected cost of capture threats against x's pieces on shared squares. */
+/* Expected cost of capture threats against x's pieces on shared, non-safe squares. */
 static float danger(const UrPos *p, int x, const UrEvalW *w)
 {
-    const unsigned mine = p->mask[x], theirs = p->mask[x ^ 1];
+    const UrBoardDef *b = &UR_BOARDS[p->board];
+    const float sw = step_weight(p, w);
+    const uint32_t mine = p->mask[x], theirs = p->mask[x ^ 1];
     float total = 0;
-    for (int s = UR_SHARED_LO; s <= UR_SHARED_HI; s++) {
-        if (s == UR_CENTRE || !(mine & (1u << s)))
+    for (int s = b->shared_lo; s <= b->shared_hi; s++) {
+        if ((b->safe >> s & 1u) || !(mine & (1u << s)))
             continue;
         float prob = 0;
         for (int d = 1; d <= 4; d++) {
@@ -46,7 +59,7 @@ static float danger(const UrPos *p, int x, const UrEvalW *w)
             if (t >= 1 && (theirs & (1u << t)))
                 prob += PROB[d];
         }
-        total += prob * (s * w->step + w->loss);
+        total += prob * (s * sw + w->loss);
     }
     return total * (p->turn == x ? w->defer : 1.0f);
 }
@@ -74,9 +87,9 @@ static float chance(Search *s, const UrPos *p, int depth, float alpha, float bet
 static int move_key(const UrPos *p, UrMove m)
 {
     int k = m.to;
-    if (m.to == UR_OFF) k += 20;
-    else if (ur_is_shared(m.to) && m.to != UR_CENTRE && (p->mask[p->turn ^ 1] & (1u << m.to))) k += 40;
-    if (ur_is_rosette(m.to)) k += 30;
+    if (m.to == ur_off(p)) k += 20;
+    else if (ur_is_shared(p->board, m.to) && !ur_is_safe(p->board, m.to) && (p->mask[p->turn ^ 1] & (1u << m.to))) k += 40;
+    if (ur_is_rosette(p->board, m.to)) k += 30;
     return k;
 }
 

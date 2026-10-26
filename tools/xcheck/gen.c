@@ -1,5 +1,5 @@
 /* Emits a transcript of random games for the Python cross-check (check.py).
-   usage: xcheck_gen <games> <seed>
+   usage: xcheck_gen <games> <seed> [board 0=Ur 1=Twenty]
    Per game:  G <index> <first player> <policy>
    Per roll:  M <player> <roll> <n> <from:to ...> <chosen from:to | pass>
               S <turn> <mask0> <mask1> <pool0> <pool1> <done0> <done1> <winner>   (state after) */
@@ -18,6 +18,7 @@ int main(int argc, char **argv)
 {
     int games = argc > 1 ? atoi(argv[1]) : 1000;
     uint64_t seed = argc > 2 ? strtoull(argv[2], 0, 10) : 1;
+    int board = argc > 3 ? atoi(argv[3]) : UR_BOARD_UR;
     UrRng rng;
     UrAiConfig fast = UR_AI_DEFAULT;
     fast.expert_budget = 2000;
@@ -27,8 +28,8 @@ int main(int argc, char **argv)
         int policy = g % 8;    /* 0-3,5 random, 4 beginner, 6 medium, 7 expert */
         int first = 0;   /* the library always lets LIGHT (player 0) start */
         UrPos p;
-        ur_init(&p, first);
-        printf("G %d %d %d\n", g, first, policy);
+        ur_init(&p, first, board);
+        printf("G %d %d %d %d\n", g, first, policy, board);
         print_state(&p);
         while (ur_winner(&p) < 0) {
             int roll = ur_roll(&rng);

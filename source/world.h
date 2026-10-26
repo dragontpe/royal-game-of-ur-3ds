@@ -31,8 +31,11 @@ void world_clear_dice(void);
 bool world_busy(void);              /* pieces or dice still moving */
 void world_update(float dt);
 
-/* Highlights for `player`: flags per step 0..15 (0 = the pool, 15 = off). */
-void world_highlight(int player, const u8 flags[16]);
+/* Highlights for `player`: flags per step 0..track+1 (0 = the pool, track+1 = off),
+ * an array of UR_MAX_TRACK + 2. */
+void world_highlight(int player, const u8 *flags);
+/* The board the last world_reset() set up. */
+int world_board(void);
 
 /* World position of a piece standing on `step` (for pool/off: the next slot). */
 void world_step_pos(int player, int step, float *x, float *z);

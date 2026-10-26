@@ -1,0 +1,19 @@
+{
+  "README_twenty.txt": "9392a338ac8b371d298a28e64ba10eb5efe5917c099d84771b468313ecd86bf1",
+  "asset_report_twenty.json": "bd4fd8705592f6306b092db86702b03a3ef48d1bc4c9f2eb5438adc12a9a6cbb",
+  "board_layout_twenty.json": "db1089d7b5feb96fdd1287a325248d25683e20669784ae1b3296c9af3f4d72e5",
+  "glb/ur_board_twenty.glb": "8ce0908ebc135b381dee2c8e54e4bcbaced11947d32d10de15f38e681d394da3",
+  "previews/twenty_etc1.png": "6df3f358ac61447580cf824d8838d0cc6c59c40ee8848f054bade7cb46f52d09",
+  "previews/twenty_front.png": "5f7016be6cde9ec00ffde94541258b16a6022780017e2d3f30dcad26a50bb93f",
+  "previews/twenty_gameplay_400x240.png": "0a7d1263f215a36eda3df32b9e201a037ca503aa3a5e7391e156f8c64489f86b",
+  "previews/twenty_left.png": "a8e54175c2f7c1e548324b0b9039ca03852ab9fc45df8c8789a44c289380d076",
+  "previews/twenty_rgb565.png": "1722345ec6c747b587b73f75434d249ed2dd8e5b4505c1eadd5b3b9fd00d0a62",
+  "previews/twenty_right.png": "57b5a8ad8471e23eb6cd6806261d697f4d322e1bf91561198bab366c6ea6cfc6",
+  "previews/twenty_three_quarter.png": "8464ea49243ce244d8e3c8b314dc14cff452790c6dec9296bab1fa3c8b2b47cd",
+  "previews/twenty_top.png": "286772ad568bb478ed94549669fc5a71a5e678caaf8952f5c33f034fa4d6033b",
+  "source/ur_assets_twenty.blend": "5c11be20bb6cd90873e46ccae691788d54035eb3bef4306d5ab410b4fd19340f",
+  "textures/t3x/ur_board_twenty_etc1.t3x": "ca353a0e3d6e76594be42744f9e140f93765a6d66b99a83da9f1413282804b9c",
+  "textures/t3x/ur_board_twenty_rgb565.t3x": "177e6bac2481e4704b8692ed46eb5f9995d4d304635bc24e7f024815c08ffa0f",
+  "textures/ur_board_twenty_basecolor.png": "19b6eb7074c87dda3b856579c5f042b723e10cb3c8b3750c858d4c2f396ab048",
+  "validation_report_twenty.json": "ef11cc7321ab7f624b2edbab01b307040b717beac90e6908090f7527676bec02"
+}

@@ -1,5 +1,5 @@
-/* Self-play ladder: ladder <A> <B> <games> [seed] [a.key=val b.key=val ...]
-   or:                ladder all <games> [seed]
+/* Self-play ladder: ladder <A> <B> <games> [seed] [board=0|1] [a.key=val b.key=val ...]
+   or:                ladder all <games> [seed] [board]    (both boards when board is omitted)
    Levels: beginner | medium | expert. Sides and first mover alternate. */
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,6 +17,7 @@ typedef struct {
     double secs;
 } Side;
 
+static int g_board = UR_BOARD_UR;
 static const char *LNAME[3] = { "beginner", "medium", "expert" };
 
 static int parse_level(const char *s)
@@ -52,7 +53,7 @@ static double now(void) { return (double)clock() / CLOCKS_PER_SEC; }
 static int play(Side side[2], int first, UrRng *rng)
 {
     UrPos p;
-    ur_init(&p, first);
+    ur_init(&p, first, g_board);
     while (ur_winner(&p) < 0) {
         int roll = ur_roll(rng);
         UrMove mv[UR_MAX_MOVES];
@@ -125,8 +126,8 @@ static void match(int la, int lb, int games, uint64_t seed, char **opts, int nop
     }
     double lo, hi;
     wilson(a_wins, games, &lo, &hi);
-    printf("%s vs %s, %d games: %s wins %d (%.1f%%, 95%% CI %.1f-%.1f%%), %s wins %d\n",
-           LNAME[la], LNAME[lb], games, LNAME[la], a_wins, 100.0 * a_wins / games, 100 * lo, 100 * hi,
+    printf("[%s] %s vs %s, %d games: %s wins %d (%.1f%%, 95%% CI %.1f-%.1f%%), %s wins %d\n",
+           UR_BOARDS[g_board].name, LNAME[la], LNAME[lb], games, LNAME[la], a_wins, 100.0 * a_wins / games, 100 * lo, 100 * hi,
            LNAME[lb], games - a_wins);
     print_side("A", &A);
     print_side("B", &B);
@@ -137,18 +138,23 @@ int main(int argc, char **argv)
     if (argc >= 3 && !strcmp(argv[1], "all")) {
         int games = atoi(argv[2]);
         uint64_t seed = argc > 3 ? strtoull(argv[3], 0, 10) : 1;
-        match(UR_EXPERT, UR_MEDIUM, games, seed, NULL, 0);
-        match(UR_MEDIUM, UR_BEGINNER, games, seed + 1, NULL, 0);
-        match(UR_EXPERT, UR_BEGINNER, games, seed + 2, NULL, 0);
+        for (int b = 0; b < UR_BOARD_COUNT; b++) {
+            if (argc > 4 && atoi(argv[4]) != b) continue;
+            g_board = b;
+            match(UR_EXPERT, UR_MEDIUM, games, seed, NULL, 0);
+            match(UR_MEDIUM, UR_BEGINNER, games, seed + 1, NULL, 0);
+            match(UR_EXPERT, UR_BEGINNER, games, seed + 2, NULL, 0);
+        }
         return 0;
     }
     if (argc < 4) {
-        fprintf(stderr, "usage: ladder <A> <B> <games> [seed] [a.key=val ...] | ladder all <games> [seed]\n");
+        fprintf(stderr, "usage: ladder <A> <B> <games> [seed] [board=N] [a.key=val ...] | ladder all <games> [seed]\n");
         return 2;
     }
     int next = 4;
     uint64_t seed = 1;
     if (argc > 4 && !strchr(argv[4], '=')) { seed = strtoull(argv[4], 0, 10); next = 5; }
+    if (next < argc && !strncmp(argv[next], "board=", 6)) { g_board = atoi(argv[next] + 6); next++; }
     match(parse_level(argv[1]), parse_level(argv[2]), atoi(argv[3]), seed, argv + next, argc - next);
     return 0;
 }

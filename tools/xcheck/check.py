@@ -8,14 +8,25 @@ from royalur.rules.state import WinGameState
 P = [PlayerType.LIGHT, PlayerType.DARK]   # C player 0 = LIGHT, 1 = DARK
 
 
-def make_game():
-    return Game.create_finkel()
+def make_game(board):
+    if board == 0:
+        return Game.create_finkel()
+    # Library aseb preset = aseb shape + aseb paths + 4 binary dice + safe rosettes + extra roll on
+    # rosettes, no extra roll on capture -- but 5 starting pieces. We need 7 (Finkel count), so build
+    # the same settings with 7 pieces.
+    from royalur import GameSettings, BoardType, PathType, DiceType
+    s = GameSettings(BoardType.ASEB.create_board_shape(), PathType.ASEB.create_path_pair(),
+                     lambda: DiceType.FOUR_BINARY.create_dice(), 7, True, True, False)
+    return Game.create(s)
 
 
-def step_of(move):
+OFF = {0: 15, 1: 17}
+
+
+def step_of(move, off):
     """(from, to) in our step numbering."""
     frm = 0 if move.is_introducing_piece() else move.get_source_piece().path_index + 1
-    to = 15 if move.is_scoring_piece() else move.get_dest_piece().path_index + 1
+    to = off if move.is_scoring_piece() else move.get_dest_piece().path_index + 1
     return frm, to
 
 
@@ -43,6 +54,8 @@ def lib_state(game):
 
 def main(path):
     games = turns = moves = 0
+    board = 0
+    off = 15
     mismatches = []
     game = None
     skip_game = False
@@ -55,7 +68,9 @@ def main(path):
             if tok[0] == "G":
                 games += 1
                 first = int(tok[2])
-                game = make_game()
+                board = int(tok[4])
+                off = OFF[board]
+                game = make_game(board)
                 skip_game = False
                 assert first == 0, "library games always start with LIGHT"
                 first_state = True
@@ -83,7 +98,7 @@ def main(path):
                     continue
                 game.roll_dice(roll)
                 if game.is_waiting_for_move():
-                    avail = sorted(step_of(m) for m in game.find_available_moves())
+                    avail = sorted(step_of(m, off) for m in game.find_available_moves())
                 else:
                     avail = []
                 mine = sorted(tuple(int(x) for x in s.split(":")) for s in ours)
@@ -94,10 +109,11 @@ def main(path):
                 if chosen != "pass":
                     frm, to = (int(x) for x in chosen.split(":"))
                     for m in game.find_available_moves():
-                        if step_of(m) == (frm, to):
+                        if step_of(m, off) == (frm, to):
                             game.make_move(m)
                             break
                     moves += 1
+    print(f"board: {'Ur (Finkel)' if board == 0 else 'Twenty Squares (aseb, 7 pieces)'}")
     print(f"games compared: {games}")
     print(f"rolls compared: {turns} (moves played {moves}, passes {turns - moves})")
     print(f"mismatches: {len(mismatches)}")

@@ -1,0 +1,190 @@
+{
+  "asset": "glb/ur_board_twenty.glb",
+  "glb_version": "2.0",
+  "triangles": 92,
+  "exported_vertices": 192,
+  "bounds_gltf_m": [
+    [
+      -0.22875000536441803,
+      0.0,
+      -0.058000050485134125
+    ],
+    [
+      0.22875000536441803,
+      0.024000000208616257,
+      0.058000050485134125
+    ]
+  ],
+  "volume_m3": 0.0007436791413712136,
+  "material_count": 1,
+  "image_count": 1,
+  "texture_size": [
+    1024,
+    512
+  ],
+  "opaque": true,
+  "required_extensions": [],
+  "extensions_used": [],
+  "attributes": [
+    "NORMAL",
+    "POSITION",
+    "TEXCOORD_0"
+  ],
+  "uv_sets": 1,
+  "unit_normals": true,
+  "no_degenerate_triangles": true,
+  "outward_triangle_winding": true,
+  "identity_node_transform": true,
+  "embedded_png_matches_external": true,
+  "exact_tile_centers_and_rosettes": true,
+  "all_twenty_tile_uvs_and_center_colors_checked": true,
+  "source_geometry_checks": {
+    "asset": "ur_board_twenty.glb",
+    "triangles": 92,
+    "triangle_ceiling": 400,
+    "tile_count": 20,
+    "rosette_count": 5,
+    "rosette_positions": [
+      [
+        0,
+        0
+      ],
+      [
+        1,
+        3
+      ],
+      [
+        1,
+        7
+      ],
+      [
+        1,
+        11
+      ],
+      [
+        2,
+        0
+      ]
+    ],
+    "bounds_gltf_m": [
+      [
+        -0.22875,
+        0,
+        -0.05800005000000001
+      ],
+      [
+        0.22875,
+        0.024,
+        0.05800005000000001
+      ]
+    ],
+    "size_m": [
+      0.4575,
+      0.024,
+      0.11600010000000002
+    ],
+    "origin": "bottom center of bounding box",
+    "object_transform": "identity",
+    "texture_dimensions": [
+      1024,
+      512
+    ],
+    "materials": 1,
+    "uv_sets": 1,
+    "attributes": [
+      "POSITION",
+      "NORMAL",
+      "TEXCOORD_0"
+    ],
+    "baked_shading": "Cycles emission bake of artwork multiplied by local AO and .72+.28*normal.Z soft lighting; no runtime lighting required",
+    "table_margin_x_m": 0.07124999999999998,
+    "table_margin_z_m": 0.14199994999999999,
+    "lamp_intersections": 0,
+    "clear_waiting_bays": [
+      {
+        "row": 0,
+        "column": 4,
+        "counter_edge_clearance_m": 0.0050333487407787075
+      },
+      {
+        "row": 0,
+        "column": 5,
+        "counter_edge_clearance_m": 0.0050333487407787075
+      },
+      {
+        "row": 0,
+        "column": 6,
+        "counter_edge_clearance_m": 0.0050333487407787075
+      },
+      {
+        "row": 0,
+        "column": 7,
+        "counter_edge_clearance_m": 0.0050333487407787075
+      },
+      {
+        "row": 0,
+        "column": 8,
+        "counter_edge_clearance_m": 0.005033348740785948
+      },
+      {
+        "row": 0,
+        "column": 9,
+        "counter_edge_clearance_m": 0.005033348740785948
+      },
+      {
+        "row": 0,
+        "column": 10,
+        "counter_edge_clearance_m": 0.00503334874080767
+      },
+      {
+        "row": 0,
+        "column": 11,
+        "counter_edge_clearance_m": 0.005033348740785948
+      },
+      {
+        "row": 2,
+        "column": 4,
+        "counter_edge_clearance_m": 0.0050333487407805185
+      },
+      {
+        "row": 2,
+        "column": 5,
+        "counter_edge_clearance_m": 0.0050333487407805185
+      },
+      {
+        "row": 2,
+        "column": 6,
+        "counter_edge_clearance_m": 0.005033348740795
+      },
+      {
+        "row": 2,
+        "column": 7,
+        "counter_edge_clearance_m": 0.0050333487407805185
+      },
+      {
+        "row": 2,
+        "column": 8,
+        "counter_edge_clearance_m": 0.0050333487407805185
+      },
+      {
+        "row": 2,
+        "column": 9,
+        "counter_edge_clearance_m": 0.005033348740785948
+      },
+      {
+        "row": 2,
+        "column": 10,
+        "counter_edge_clearance_m": 0.0050333487407787075
+      },
+      {
+        "row": 2,
+        "column": 11,
+        "counter_edge_clearance_m": 0.0050333487407787075
+      }
+    ],
+    "existing_scene_objects_unchanged": 45,
+    "hardware_tested": false
+  },
+  "reimported_glb_top_and_native_previews": true,
+  "hardware_tested": false
+}

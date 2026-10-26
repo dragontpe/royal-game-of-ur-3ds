@@ -88,6 +88,15 @@ def build():
     sprite('die_m_l', 36, 33, lambda c: die(c, 18, 19, 29, True, INK, SHELL_HI, SHELL_LO))
     sprite('die_u_l', 36, 33, lambda c: die(c, 18, 19, 29, False, INK, SHELL_HI, SHELL_LO))
 
+    # Twenty Squares: bottom-screen map (24 px cells), selection sprites, board icons
+    sprite('map_t', 12 * S + 6, 3 * S + 6, lambda c: twenty_map(c, 3, 3, S))
+    sprite('ring_sel_xs', 26, 26, lambda c: (c.circle(13, 13, 12.5, SHELL_HI), c.circle(13, 13, 11.2, T['select']),
+                                             c.circle(13, 13, 9, (0, 0, 0, 0))))
+    sprite('tgt_sel_xs', 21, 21, lambda c: (c.rect(0.5, 0.5, 20, 20, (*T['target'], 70), r=3),
+                                            c.rect(0.5, 0.5, 20, 20, None, r=3, outline=T['target'], width=2.6)))
+    sprite('icon_ur', 8 * 9 + 6, 3 * 9 + 6, lambda c: board_map(c, 3, 3, T['inlay'], SHELL, 9))
+    sprite('icon_twenty', 12 * 9 + 6, 3 * 9 + 6, lambda c: twenty_map(c, 3, 3, 9))
+
     # path diagram for the rules page: light's track with arrows
     def path(c, CELL=S):
         import math
@@ -112,6 +121,29 @@ def build():
                 (x1 + math.cos(ang - 2.4) * 7, y1 + math.sin(ang - 2.4) * 7)], GOLD)
         c.circle(start[0], start[1], 4, GOLD)
     sprite('path_l_s', 8 * S + 6, 3 * S + 6, path)
+
+    def path_twenty(c, CELL=S):
+        import math
+        pts = [(3 + (3 - k) * CELL + CELL / 2, 3 + 2 * CELL + CELL / 2) for k in range(4)]
+        pts += [(3 + col * CELL + CELL / 2, 3 + CELL + CELL / 2) for col in range(12)]
+        start = (3 + 4 * CELL + CELL / 2, 3 + 2 * CELL + CELL / 2)
+        end = (3 + 11 * CELL + CELL / 2, 3 + 2 * CELL + CELL / 2 + 4)
+        pts = [start] + pts + [end]
+        for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+            dx, dy = x1 - x0, y1 - y0
+            l = math.hypot(dx, dy)
+            nx, ny = -dy / l * 1.4, dx / l * 1.4
+            c.poly([(x0 + nx, y0 + ny), (x1 + nx, y1 + ny), (x1 - nx, y1 - ny), (x0 - nx, y0 - ny)], (*GOLD, 235))
+            c.circle(x1, y1, 1.4, (*GOLD, 235))
+        x0, y0 = pts[-2]
+        x1, y1 = pts[-1]
+        ang = math.atan2(y1 - y0, x1 - x0)
+        tip = (x1 + math.cos(ang) * 4, y1 + math.sin(ang) * 4)
+        c.poly([tip, (x1 + math.cos(ang + 2.4) * 7, y1 + math.sin(ang + 2.4) * 7),
+                (x1 + math.cos(ang - 2.4) * 7, y1 + math.sin(ang - 2.4) * 7)], GOLD)
+        c.circle(start[0], start[1], 4, GOLD)
+    sprite('map_t_s', 12 * S + 6, 3 * S + 6, lambda c: twenty_map(c, 3, 3, S))
+    sprite('path_t_s', 12 * S + 6, 3 * S + 6, path_twenty)
 
     # top-screen logo, legible over the room render
     def logo(c):

@@ -8,7 +8,6 @@
 #include <stdarg.h>
 
 #define ROBOT_SPEED 4.0f
-#define ROBOT_AI_GAMES 3     /* one per level, then a resume test (game 3) and a two-player game (game 4) */
 
 static FILE *rlog;
 static float r_wait = 3.5f, r_still;
@@ -73,63 +72,79 @@ static void q_tap(int x, int y)
 		r_queue[r_qn++] = (RAction){ 0, x, y, true };
 }
 
-static void step_xy(int player, int step, int *x, int *y)
+static void step_xy(const PlayDebug *d, int step, int *x, int *y)
 {
+	static const int gx[2] = { 24, 16 }, gy[2] = { 42, 60 }, gc[2] = { 34, 24 };
+	int b = d->pos.board, player = d->turn;
 	int row_y = player == 0 ? 148 : 6, row, col;
 	if (step == 0) {
 		*x = 26;
 		*y = row_y + 13;
-	} else if (step == UR_OFF) {
+	} else if (step == ur_off(&d->pos)) {
 		*x = 284;
 		*y = row_y + 13;
 	} else {
-		ur_step_cell(player, step, &row, &col);
-		*x = 24 + col * 34 + 17;
-		*y = 42 + row * 34 + 17;
+		ur_step_cell(b, player, step, &row, &col);
+		*x = gx[b] + col * gc[b] + gc[b] / 2;
+		*y = gy[b] + row * gc[b] + gc[b] / 2;
 	}
 }
+
+/* Games: board, level (-1 = two players). Game 3 is the pause/quit/Continue test. */
+static const int plan_board[] = { UR_BOARD_UR, UR_BOARD_TWENTY, UR_BOARD_TWENTY, UR_BOARD_UR, UR_BOARD_TWENTY };
+static const int plan_level[] = { 0, 1, 2, 1, -1 };
+#define PLAN_N 5
+#define RESUME_GAME 3
+#define TOUR_END 21
 
 static void robot_menu(int scr)
 {
 	/* the tour, then games; each step queues actions and a wait */
-	switch (r_step) {
-	case 0: rshot("01_title"); r_wait = 1.0f; break;
-	case 1: q_tap(80, 190); r_wait = 1.2f; break;                        /* The story */
-	case 2: case 3: case 4: case 5: case 6: case 7:
+	if (r_step == 0) {
+		rshot("01_title");
+		r_wait = 1.0f;
+	} else if (r_step == 1) {
+		q_tap(80, 190);                                                      /* The story */
+		r_wait = 1.2f;
+	} else if (r_step <= 8) {                                                /* 7 story pages */
 		rshot("02_story_%d", r_step - 1);
-		if (r_step < 7)
-			q_key(KEY_R);
-		else
-			q_key(KEY_B);
+		q_key(r_step < 8 ? KEY_R : KEY_B);
 		r_wait = 0.8f;
-		break;
-	case 8: q_tap(230, 130); r_wait = 1.2f; break;                       /* How to play */
-	case 9: case 10: case 11: case 12: case 13: case 14:
-		rshot("03_rules_%d", r_step - 8);
-		if (r_step < 14)
+	} else if (r_step == 9) {
+		q_tap(230, 130);                                                     /* How to play */
+		r_wait = 1.2f;
+	} else if (r_step <= 16) {                                               /* 7 rules pages */
+		rshot("03_rules_%d", r_step - 9);
+		if (r_step < 16)
 			q_tap(276, 214);
 		else
 			q_tap(56, 214);
 		r_wait = 0.8f;
-		break;
-	case 15: q_tap(230, 190); r_wait = 1.0f; break;                      /* Settings */
-	case 16: rshot("04_settings"); q_key(KEY_DDOWN); q_key(KEY_DDOWN); q_key(KEY_A); r_wait = 0.8f; break;
-	case 17: rshot("04_settings_toggled"); q_key(KEY_A); q_key(KEY_B); r_wait = 0.8f; break;
-	default:
+	} else if (r_step == 17) {
+		q_tap(230, 190);                                                     /* Settings */
+		r_wait = 1.0f;
+	} else if (r_step == 18) {
+		rshot("04_settings");
+		q_key(KEY_DDOWN);
+		q_key(KEY_DDOWN);
+		q_key(KEY_A);
+		r_wait = 0.8f;
+	} else if (r_step == 19) {
+		rshot("04_settings_toggled");
+		q_key(KEY_A);
+		q_key(KEY_B);
+		r_wait = 0.8f;
+	} else {
 		if (scr != SCR_TITLE)
-			break;
-		if (r_games == ROBOT_AI_GAMES && r_rs == 4) {
+			return;
+		if (r_games == RESUME_GAME && r_rs == 4) {
 			rshot("44_title_continue");
 			q_tap(80, 70);                                                   /* Continue */
 			r_rs = 5;
 			r_wait = 1.2f;
-		} else if (r_games <= ROBOT_AI_GAMES) {
-			r_level = r_games < ROBOT_AI_GAMES ? r_games % 3 : 1;
-			q_tap(230, 70);                                                  /* Play */
+		} else if (r_games < PLAN_N) {
+			q_tap(plan_level[r_games] < 0 ? 80 : 230, plan_level[r_games] < 0 ? 130 : 70);
 			r_step = 100;
-			r_wait = 1.0f;
-		} else if (r_games == ROBOT_AI_GAMES + 1) {
-			q_tap(80, 130);                                                  /* Two players */
 			r_wait = 1.0f;
 		} else if (!r_done) {
 			r_done = true;
@@ -147,11 +162,22 @@ static void robot_menu(int scr)
 
 static void robot_level(void)
 {
-	if (r_step == 100 && r_games == 0)
-		rshot("05_level");
-	q_tap(160, 44 + r_level * 52 + 22);
-	r_wait = 1.0f;
-	r_step = 101;
+	if (r_step == 100) {
+		q_tap(plan_board[r_games] == UR_BOARD_UR ? 86 : 234, 61);             /* board tile */
+		r_step = 101;
+		r_wait = 0.6f;
+		return;
+	}
+	if (r_step == 101) {
+		if (r_games == 1)
+			rshot("05_new_game_twenty");
+		if (plan_level[r_games] < 0)
+			q_tap(160, 140);                                                 /* Start (two players) */
+		else
+			q_tap(160, 102 + plan_level[r_games] * 34 + 15);
+		r_step = 102;
+		r_wait = 1.0f;
+	}
 }
 
 static void robot_play(void)
@@ -196,9 +222,9 @@ static void robot_play(void)
 			r_seen[4] = true;
 			rshot("13_no_move");
 		}
-		if (d.mode == MODE_2P && d.phase == PH_WAIT_ROLL && !r_seen[5]) {
+		if (d.pos.board == UR_BOARD_TWENTY && d.phase == PH_PICK && !r_seen[5]) {
 			r_seen[5] = true;
-			rshot("20_two_players");
+			rshot("20_twenty_pick");
 		}
 	}
 	if (d.phase == PH_OVER) {
@@ -213,7 +239,7 @@ static void robot_play(void)
 		r_turns = 0;
 		q_key(KEY_B);
 		r_wait = 1.0f;
-		r_step = 18;
+		r_step = TOUR_END;
 		return;
 	}
 	if (r_still > 25.0f) {
@@ -225,7 +251,7 @@ static void robot_play(void)
 	if (r_wait > 0 || d.paused)
 		return;
 
-	if (d.phase == PH_WAIT_ROLL && r_games == ROBOT_AI_GAMES && r_rs == 0 && r_turns > 8) {
+	if (d.phase == PH_WAIT_ROLL && r_games == RESUME_GAME && r_rs == 0 && r_turns > 8) {
 		q_key(KEY_START);                                                    /* pause, then How to play */
 		r_rs = 1;
 		r_wait = 0.6f;
@@ -259,10 +285,10 @@ static void robot_play(void)
 		}
 		int i = rrand(d.nmoves), how = rrand(10), x, y;
 		if (how < 4) {
-			step_xy(d.turn, d.moves[i].from, &x, &y);
+			step_xy(&d, d.moves[i].from, &x, &y);
 			q_tap(x, y);
 		} else if (how < 7) {
-			step_xy(d.turn, d.moves[i].to, &x, &y);
+			step_xy(&d, d.moves[i].to, &x, &y);
 			/* a target that is also another move's piece picks that move: fine either way */
 			q_tap(x, y);
 		} else {

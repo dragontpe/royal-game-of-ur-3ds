@@ -10,7 +10,8 @@ Layout (little endian):
   per node:  u32 mesh, u32 kind, 16 * f32 matrix (column major)
 
 Material = index into the texture table.
-Kinds: 0 static, 1 light counter, 2 dark counter, 3 die, 4 lamp flame.
+Kinds: 0 static, 1 light counter, 2 dark counter, 3 die, 4 lamp flame,
+5 Ur board, 6 Twenty Squares board (any mesh node in a GLB whose file name has 'twenty').
 Static nodes (board + room) are pre-transformed and merged into one mesh per
 texture, so the room costs a handful of draw calls; everything else keeps its
 own node so the game can move or tint it.
@@ -19,6 +20,7 @@ UVs: glTF has v=0 at the top of the image; tex3ds textures put t=0 at the
 bottom, so v is flipped here and nowhere else.
 """
 import json
+import os
 import struct
 import sys
 
@@ -80,7 +82,11 @@ def mat_mul(a, b):
     return out
 
 
-def node_kind(name):
+def node_kind(name, path=''):
+    if 'twenty' in os.path.basename(path).lower():
+        return 6
+    if name == 'UR_Board' or name.startswith('UR_Board.') or name.startswith('UR_Board_mesh'):
+        return 5
     if name.startswith('UR_Counter_Shell'):
         return 1
     if name.startswith('UR_Counter_Dark'):
@@ -126,7 +132,7 @@ def main():
             node = doc['nodes'][i]
             m = mat_mul(parent, trs_matrix(node))
             if 'mesh' in node:
-                nodes.append((mesh_base + node['mesh'], node_kind(node.get('name', '')), m))
+                nodes.append((mesh_base + node['mesh'], node_kind(node.get('name', ''), path), m))
             for c in node.get('children', []):
                 walk(c, m)
 
@@ -186,7 +192,7 @@ def main():
           (out_path, len(meshes), len(nodes), tris, len(blob)))
     for i, (mat, pos, _, _, idx, name) in enumerate(meshes):
         print('  mesh %d %-30s material %d  %5d verts  %4d tris' % (i, name, mat, len(pos), len(idx) // 3))
-    print('  nodes by kind:', {k: sum(1 for n in nodes if n[1] == k) for k in range(5)})
+    print('  nodes by kind:', {k: sum(1 for n in nodes if n[1] == k) for k in range(7)})
     print('  textures:', ', '.join('%d=%s' % (v, k) for k, v in sorted(images.items(), key=lambda kv: kv[1])))
 
 

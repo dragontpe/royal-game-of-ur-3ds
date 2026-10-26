@@ -11,4 +11,5 @@ cp -X "$SRC"/textures/t3x/*.t3x assets/t3x/
 rm -f romfs/tex/*_etc1.t3x
 cp -X assets/t3x/*_rgb565.t3x romfs/tex/   # the game loads RGB565; ETC1 stays in assets/ for a memory squeeze
 GLBS=assets/glb/ur_complete_set.glb
+[ -f assets/glb/ur_board_twenty.glb ] && GLBS="$GLBS assets/glb/ur_board_twenty.glb"
 python3 tools/glb2scene.py romfs/scene.bin $GLBS

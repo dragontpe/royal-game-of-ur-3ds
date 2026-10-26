@@ -15,7 +15,7 @@
 #include "sfx.h"
 #include "world.h"
 
-Settings settings = { true, true, true, UR_MEDIUM, { 0 }, { 0 }, 0 };
+Settings settings = { true, true, true, UR_MEDIUM, UR_BOARD_UR, { { 0 } }, { { 0 } }, 0 };
 
 typedef struct {
 	u8 mode, level, pad[2];
@@ -25,9 +25,24 @@ typedef struct {
 
 
 /* Mini board on the bottom screen (matches tools/art/shapes.py). */
-#define MAP_X 24
-#define MAP_Y 42
-#define CELL 34
+/* Bottom-screen map geometry per board (matches tools/art/ui_art.py). */
+typedef struct {
+	int x, y, cell;                   /* top-left of cell (0,0), cell pitch */
+	size_t map, pc[2], ring, ring_sel, tgt, tgt_sel;
+	int pc_half, ring_half, ring_sel_half;
+} MapGeo;
+
+static const MapGeo GEO[UR_BOARD_COUNT] = {
+	{ 24, 42, 34, art_map_idx, { art_pc_l_idx, art_pc_d_idx }, art_ring_idx, art_ring_sel_idx, art_tgt_idx,
+	  art_tgt_sel_idx, 13, 16, 17 },
+	{ 16, 60, 24, art_map_t_idx, { art_pc_l_xs_idx, art_pc_d_xs_idx }, art_ring_xs_idx, art_ring_sel_xs_idx,
+	  art_tgt_xs_idx, art_tgt_sel_xs_idx, 10, 12, 13 },
+};
+#define GEO_ (&GEO[G.pos.board])
+#define MAP_X (GEO_->x)
+#define MAP_Y (GEO_->y)
+#define CELL (GEO_->cell)
+#define HL_SIZE (UR_MAX_TRACK + 2)
 #define ROW_OPP 6
 #define ROW_YOU 148
 #define HOME_X 264
@@ -116,6 +131,8 @@ void play_init(void)
 		settings = s;
 	if (settings.last_level > UR_EXPERT)
 		settings.last_level = UR_MEDIUM;
+	if (settings.last_board >= UR_BOARD_COUNT)
+		settings.last_board = UR_BOARD_UR;
 }
 
 bool play_has_save(void)
@@ -135,27 +152,27 @@ static void start_common(void)
 	G.over_t = 0;
 	world_reset(&G.pos);
 	world_clear_dice();
-	u8 none[16] = { 0 };
+	u8 none[HL_SIZE] = { 0 };
 	world_highlight(0, none);
 }
 
-void play_new(PlayMode mode, UrLevel level)
+void play_new(PlayMode mode, UrLevel level, int board)
 {
 	memset(&G, 0, sizeof(G));
 	G.mode = mode;
 	G.level = level;
 	ur_rng_seed(&G.rng, svcGetSystemTick() ^ 0x5eedull);
 	G.fortune = ur_rng_below(&G.rng, NFORTUNES);
-	ur_init(&G.pos, ur_rng_below(&G.rng, 2));
+	ur_init(&G.pos, ur_rng_below(&G.rng, 2), board);
 	start_common();
 	char m[48];
 	snprintf(m, sizeof(m), G.pos.turn == 0 && mode == MODE_AI ? "You go first" : "%s goes first",
 	         name_of(G.pos.turn));
 	say(m, mode == MODE_AI ? "Race all seven pieces home" : "Pass the 3DS between turns", false);
-	if (mode == MODE_AI) {
+	if (mode == MODE_AI)
 		settings.last_level = level;
-		play_settings_save();
-	}
+	settings.last_board = board;
+	play_settings_save();
 }
 
 bool play_resume(void)
@@ -196,7 +213,7 @@ static void do_roll(void)
 
 static void highlight(void)
 {
-	u8 f[16] = { 0 };
+	u8 f[HL_SIZE] = { 0 };
 	if (G.phase == PH_PICK || G.phase == PH_AUTO || G.phase == PH_AI_SHOW) {
 		for (int i = 0; i < G.nmoves; i++) {
 			f[G.moves[i].from] |= HL_MOVABLE;
@@ -240,9 +257,9 @@ static void after_move(void)
 		sfx_play(human_won ? SFX_WIN : SFX_LOSE, 0, 1);
 		if (G.mode == MODE_AI) {
 			if (G.winner == 0)
-				settings.wins[G.level]++;
+				settings.wins[G.pos.board][G.level]++;
 			else
-				settings.losses[G.level]++;
+				settings.losses[G.pos.board][G.level]++;
 		} else {
 			settings.games_2p++;
 		}
@@ -347,15 +364,15 @@ static int move_at(int px, int py)
 	}
 	if (in_rect(px, py, HOME_X - 44, row_y, HOME_W + 48, 26)) {
 		for (int i = 0; i < G.nmoves; i++)
-			if (G.moves[i].to == UR_OFF)
+			if (G.moves[i].to == ur_off(&G.pos))
 				return i;
 	}
 	if (px < MAP_X || py < MAP_Y)
 		return -1;
 	int col = (px - MAP_X) / CELL, row = (py - MAP_Y) / CELL;
-	if (col > 7 || row > 2)
+	if (col >= UR_BOARDS[G.pos.board].cols || row > 2)
 		return -1;
-	int step = ur_cell_step(p, row, col);
+	int step = ur_cell_step(G.pos.board, p, row, col);
 	if (step < 0)
 		return -1;
 	for (int i = 0; i < G.nmoves; i++)
@@ -510,14 +527,14 @@ int play_update(float dt, const Input *in)
 		if (in->down & KEY_A) {
 			sfx_play(SFX_TICK, 0, 1);
 			if (G.over_sel == 0)
-				play_new(G.mode, G.level);
+				play_new(G.mode, G.level, G.pos.board);
 			else
 				return PLAY_QUIT;
 		}
 		if (in->touch_down) {
 			if (in_rect(in->tx, in->ty, 16, 180, 140, 44)) {
 				sfx_play(SFX_TICK, 0, 1);
-				play_new(G.mode, G.level);
+				play_new(G.mode, G.level, G.pos.board);
 			} else if (in_rect(in->tx, in->ty, 164, 180, 140, 44)) {
 				sfx_play(SFX_TICK, 0, 1);
 				return PLAY_QUIT;
@@ -581,11 +598,11 @@ static void player_row(int y, int player)
 static void draw_pieces(void)
 {
 	for (int p = 0; p < 2; p++)
-		for (int s = 1; s <= UR_TRACK; s++)
+		for (int s = 1; s <= UR_BOARDS[G.pos.board].track; s++)
 			if (G.pos.mask[p] & (1u << s)) {
 				int row, col;
-				ur_step_cell(p, s, &row, &col);
-				spr(p == 0 ? art_pc_l_idx : art_pc_d_idx, cell_center_x(col) - 13, cell_center_y(row) - 13);
+				ur_step_cell(G.pos.board, p, s, &row, &col);
+				spr(GEO_->pc[p], cell_center_x(col) - GEO_->pc_half, cell_center_y(row) - GEO_->pc_half);
 			}
 }
 
@@ -604,16 +621,16 @@ static void draw_highlights(void)
 		int row, col;
 		if (m->from == 0)
 			spr(sel ? art_ring_sel_idx : art_ring_idx, 26 - (sel ? 17 : 16), row_y + 13 - (sel ? 17 : 16));
-		else if (ur_step_cell(p, m->from, &row, &col))
-			spr(sel ? art_ring_sel_idx : art_ring_idx, cell_center_x(col) - (sel ? 17 : 16),
-			    cell_center_y(row) - (sel ? 17 : 16));
-		if (m->to == UR_OFF) {
+		else if (ur_step_cell(G.pos.board, p, m->from, &row, &col))
+			spr(sel ? GEO_->ring_sel : GEO_->ring, cell_center_x(col) - (sel ? GEO_->ring_sel_half : GEO_->ring_half),
+			    cell_center_y(row) - (sel ? GEO_->ring_sel_half : GEO_->ring_half));
+		if (m->to == ur_off(&G.pos)) {
 			draw_rect(HOME_X - 2, row_y, HOME_W + 4, 2, COL_TARGET);
 			draw_rect(HOME_X - 2, row_y + 24, HOME_W + 4, 2, COL_TARGET);
 			draw_rect(HOME_X - 2, row_y, 2, 26, COL_TARGET);
 			draw_rect(HOME_X + HOME_W, row_y, 2, 26, COL_TARGET);
-		} else if (ur_step_cell(p, m->to, &row, &col)) {
-			spr(sel ? art_tgt_sel_idx : art_tgt_idx, MAP_X + col * CELL + 1.5f, MAP_Y + row * CELL + 1.5f);
+		} else if (ur_step_cell(G.pos.board, p, m->to, &row, &col)) {
+			spr(sel ? GEO_->tgt_sel : GEO_->tgt, MAP_X + col * CELL + 1.5f, MAP_Y + row * CELL + 1.5f);
 		}
 	}
 }
@@ -664,7 +681,7 @@ static void draw_over(void)
 	spr(art_rosette_big_idx, 160 - 24, 70);
 	if (G.mode == MODE_AI)
 		text(TS_TEXT, 160, 140, A_CENTER, "Record vs %s:  %d won,  %d lost", level_name[G.level],
-		     settings.wins[G.level], settings.losses[G.level]);
+		     settings.wins[G.pos.board][G.level], settings.losses[G.pos.board][G.level]);
 	else
 		text(TS_TEXT, 160, 140, A_CENTER, "Home: %d to %d", G.pos.done[0], G.pos.done[1]);
 	if (G.over_t < 1.0f)
@@ -686,7 +703,7 @@ void play_draw_bottom(void)
 {
 	draw_rect(0, 0, 320, 240, COL_GROUND);
 	player_row(ROW_OPP, 1);
-	spr(art_map_idx, MAP_X - 3, MAP_Y - 3);
+	spr(GEO_->map, MAP_X - 3, MAP_Y - 3);
 	draw_pieces();
 	draw_highlights();
 	player_row(ROW_YOU, 0);

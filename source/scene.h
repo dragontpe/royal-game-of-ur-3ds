@@ -5,7 +5,7 @@
 #include <citro3d.h>
 #include <stdbool.h>
 
-enum { KIND_STATIC, KIND_LIGHT, KIND_DARK, KIND_DIE, KIND_FLAME };
+enum { KIND_STATIC, KIND_LIGHT, KIND_DARK, KIND_DIE, KIND_FLAME, KIND_BOARD_UR, KIND_BOARD_TWENTY };
 
 #define SCENE_MAX_TEX 8
 

@@ -31,7 +31,5 @@ lines += ['#endif', '']
 open(os.path.join(ROOT, 'source', 'theme.h'), 'w').write('\n'.join(lines))
 ui_art.build()
 subprocess.check_call([sys.executable, os.path.join(ROOT, 'tools', 'art', 'decals.py')])
-os.makedirs(os.path.join(ROOT, 'romfs', 'tex'), exist_ok=True)
-subprocess.check_call(['/opt/devkitpro/tools/bin/tex3ds', '-f', 'rgba8888', '-z', 'none', '-o',
-                       os.path.join(ROOT, 'romfs', 'tex', 'decals.t3x'), os.path.join(ROOT, 'gfx', 'decals.png')])
+
 print('art ok, theme', THEME)
