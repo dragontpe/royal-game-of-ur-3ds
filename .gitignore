@@ -16,3 +16,4 @@ romfs/gfx/
 romfs/sfx/
 design/shots/
 design/sfx/
+__pycache__/
