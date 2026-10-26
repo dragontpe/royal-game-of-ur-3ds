@@ -1,4 +1,460 @@
 {
+  "ur_backdrop.glb": {
+    "meshes": [
+      {
+        "name": "UR_Backdrop_BackWall_mesh",
+        "triangles": 2,
+        "exported_vertices": 4,
+        "bounds": [
+          [
+            -0.949999988079071,
+            -0.4000000059604645,
+            -0.41999998688697815
+          ],
+          [
+            0.949999988079071,
+            0.75,
+            -0.41999998688697815
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_Ceiling_mesh",
+        "triangles": 2,
+        "exported_vertices": 4,
+        "bounds": [
+          [
+            -0.949999988079071,
+            0.75,
+            -0.41999998688697815
+          ],
+          [
+            0.949999988079071,
+            0.75,
+            1.0
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_EndApron_mesh",
+        "triangles": 12,
+        "exported_vertices": 24,
+        "bounds": [
+          [
+            -0.27649998664855957,
+            -0.06800000369548798,
+            -0.16500000655651093
+          ],
+          [
+            -0.2535000145435333,
+            -0.02800000086426735,
+            0.16500000655651093
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_EndApron_mesh.001",
+        "triangles": 12,
+        "exported_vertices": 24,
+        "bounds": [
+          [
+            0.2535000145435333,
+            -0.06800000369548798,
+            -0.16500000655651093
+          ],
+          [
+            0.27649998664855957,
+            -0.02800000086426735,
+            0.16500000655651093
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_Flame_Left_mesh",
+        "triangles": 4,
+        "exported_vertices": 12,
+        "bounds": [
+          [
+            -0.2680000066757202,
+            0.012000000104308128,
+            -0.1469999998807907
+          ],
+          [
+            -0.2639999985694885,
+            0.027000000700354576,
+            -0.14300000667572021
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_Flame_Right_mesh",
+        "triangles": 4,
+        "exported_vertices": 12,
+        "bounds": [
+          [
+            0.23199999332427979,
+            0.012000000104308128,
+            -0.1469999998807907
+          ],
+          [
+            0.23600000143051147,
+            0.027000000700354576,
+            -0.14300000667572021
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_Floor_mesh",
+        "triangles": 2,
+        "exported_vertices": 4,
+        "bounds": [
+          [
+            -0.949999988079071,
+            -0.4000000059604645,
+            -0.41999998688697815
+          ],
+          [
+            0.949999988079071,
+            -0.4000000059604645,
+            1.0
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_FrontReturn_mesh",
+        "triangles": 2,
+        "exported_vertices": 4,
+        "bounds": [
+          [
+            -0.949999988079071,
+            -0.4000000059604645,
+            1.0
+          ],
+          [
+            0.949999988079071,
+            0.75,
+            1.0
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_Lamp_Left_mesh",
+        "triangles": 116,
+        "exported_vertices": 224,
+        "bounds": [
+          [
+            -0.2639999985694885,
+            0.0,
+            -0.1589999943971634
+          ],
+          [
+            -0.23600000143051147,
+            0.013000000268220901,
+            -0.13099999725818634
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_Lamp_Right_mesh",
+        "triangles": 116,
+        "exported_vertices": 224,
+        "bounds": [
+          [
+            0.23600000143051147,
+            0.0,
+            -0.1589999943971634
+          ],
+          [
+            0.2639999985694885,
+            0.013000000268220901,
+            -0.13099999725818634
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_LeftReturn_mesh",
+        "triangles": 2,
+        "exported_vertices": 4,
+        "bounds": [
+          [
+            -0.949999988079071,
+            -0.4000000059604645,
+            -0.41999998688697815
+          ],
+          [
+            -0.949999988079071,
+            0.75,
+            1.0
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_LongApron_mesh",
+        "triangles": 12,
+        "exported_vertices": 24,
+        "bounds": [
+          [
+            -0.2750000059604645,
+            -0.06800000369548798,
+            0.1535000056028366
+          ],
+          [
+            0.2750000059604645,
+            -0.02800000086426735,
+            0.17649999260902405
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_LongApron_mesh.001",
+        "triangles": 12,
+        "exported_vertices": 24,
+        "bounds": [
+          [
+            -0.2750000059604645,
+            -0.06800000369548798,
+            -0.17649999260902405
+          ],
+          [
+            0.2750000059604645,
+            -0.02800000086426735,
+            -0.1535000056028366
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_Oil_Left_mesh",
+        "triangles": 10,
+        "exported_vertices": 12,
+        "bounds": [
+          [
+            -0.2590000033378601,
+            0.012400000356137753,
+            -0.15399999916553497
+          ],
+          [
+            -0.2409999966621399,
+            0.012400000356137753,
+            -0.13600000739097595
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_Oil_Right_mesh",
+        "triangles": 10,
+        "exported_vertices": 12,
+        "bounds": [
+          [
+            0.2409999966621399,
+            0.012400000356137753,
+            -0.15399999916553497
+          ],
+          [
+            0.2590000033378601,
+            0.012400000356137753,
+            -0.13600000739097595
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_RightReturn_mesh",
+        "triangles": 2,
+        "exported_vertices": 4,
+        "bounds": [
+          [
+            0.949999988079071,
+            -0.4000000059604645,
+            -0.41999998688697815
+          ],
+          [
+            0.949999988079071,
+            0.75,
+            1.0
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_Spout_Left_mesh",
+        "triangles": 12,
+        "exported_vertices": 24,
+        "bounds": [
+          [
+            -0.26750001311302185,
+            0.007499999832361937,
+            -0.148499995470047
+          ],
+          [
+            -0.25850000977516174,
+            0.012500000186264515,
+            -0.14149999618530273
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_Spout_Right_mesh",
+        "triangles": 12,
+        "exported_vertices": 24,
+        "bounds": [
+          [
+            0.23250000178813934,
+            0.007499999832361937,
+            -0.148499995470047
+          ],
+          [
+            0.24150000512599945,
+            0.012500000186264515,
+            -0.14149999618530273
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_TableLeg_mesh",
+        "triangles": 12,
+        "exported_vertices": 24,
+        "bounds": [
+          [
+            -0.28200000524520874,
+            -0.4000000059604645,
+            0.14800000190734863
+          ],
+          [
+            -0.24799999594688416,
+            -0.02800000086426735,
+            0.18199999630451202
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_TableLeg_mesh.001",
+        "triangles": 12,
+        "exported_vertices": 24,
+        "bounds": [
+          [
+            -0.28200000524520874,
+            -0.4000000059604645,
+            -0.18199999630451202
+          ],
+          [
+            -0.24799999594688416,
+            -0.02800000086426735,
+            -0.14800000190734863
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_TableLeg_mesh.002",
+        "triangles": 12,
+        "exported_vertices": 24,
+        "bounds": [
+          [
+            0.24799999594688416,
+            -0.4000000059604645,
+            0.14800000190734863
+          ],
+          [
+            0.28200000524520874,
+            -0.02800000086426735,
+            0.18199999630451202
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_TableLeg_mesh.003",
+        "triangles": 12,
+        "exported_vertices": 24,
+        "bounds": [
+          [
+            0.24799999594688416,
+            -0.4000000059604645,
+            -0.18199999630451202
+          ],
+          [
+            0.28200000524520874,
+            -0.02800000086426735,
+            -0.14800000190734863
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_Tabletop_mesh",
+        "triangles": 12,
+        "exported_vertices": 24,
+        "bounds": [
+          [
+            -0.30000001192092896,
+            -0.02800000086426735,
+            -0.20000000298023224
+          ],
+          [
+            0.30000001192092896,
+            0.0,
+            0.20000000298023224
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_WallFoot_mesh",
+        "triangles": 12,
+        "exported_vertices": 24,
+        "bounds": [
+          [
+            -0.8550000190734863,
+            -0.4000000059604645,
+            -0.41850000619888306
+          ],
+          [
+            -0.7250000238418579,
+            -0.2800000011920929,
+            -0.38350000977516174
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_WallFoot_mesh.001",
+        "triangles": 12,
+        "exported_vertices": 24,
+        "bounds": [
+          [
+            0.7250000238418579,
+            -0.4000000059604645,
+            -0.41850000619888306
+          ],
+          [
+            0.8550000190734863,
+            -0.2800000011920929,
+            -0.38350000977516174
+          ]
+        ]
+      }
+    ],
+    "images": [
+      {
+        "size": [
+          512,
+          512
+        ],
+        "mode": "RGB"
+      },
+      {
+        "size": [
+          512,
+          512
+        ],
+        "mode": "RGB"
+      },
+      {
+        "size": [
+          256,
+          256
+        ],
+        "mode": "RGB"
+      }
+    ],
+    "triangles_per_eye": 428,
+    "mesh_nodes": 25,
+    "extensions_required": [],
+    "bytes": 178184
+  },
   "ur_board.glb": {
     "meshes": [
       {
@@ -35,6 +491,431 @@
   },
   "ur_complete_set.glb": {
     "meshes": [
+      {
+        "name": "UR_Backdrop_BackWall_mesh",
+        "triangles": 2,
+        "exported_vertices": 4,
+        "bounds": [
+          [
+            -0.949999988079071,
+            -0.4000000059604645,
+            -0.41999998688697815
+          ],
+          [
+            0.949999988079071,
+            0.75,
+            -0.41999998688697815
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_Ceiling_mesh",
+        "triangles": 2,
+        "exported_vertices": 4,
+        "bounds": [
+          [
+            -0.949999988079071,
+            0.75,
+            -0.41999998688697815
+          ],
+          [
+            0.949999988079071,
+            0.75,
+            1.0
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_EndApron_mesh",
+        "triangles": 12,
+        "exported_vertices": 24,
+        "bounds": [
+          [
+            -0.27649998664855957,
+            -0.06800000369548798,
+            -0.16500000655651093
+          ],
+          [
+            -0.2535000145435333,
+            -0.02800000086426735,
+            0.16500000655651093
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_EndApron_mesh.001",
+        "triangles": 12,
+        "exported_vertices": 24,
+        "bounds": [
+          [
+            0.2535000145435333,
+            -0.06800000369548798,
+            -0.16500000655651093
+          ],
+          [
+            0.27649998664855957,
+            -0.02800000086426735,
+            0.16500000655651093
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_Flame_Left_mesh",
+        "triangles": 4,
+        "exported_vertices": 12,
+        "bounds": [
+          [
+            -0.2680000066757202,
+            0.012000000104308128,
+            -0.1469999998807907
+          ],
+          [
+            -0.2639999985694885,
+            0.027000000700354576,
+            -0.14300000667572021
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_Flame_Right_mesh",
+        "triangles": 4,
+        "exported_vertices": 12,
+        "bounds": [
+          [
+            0.23199999332427979,
+            0.012000000104308128,
+            -0.1469999998807907
+          ],
+          [
+            0.23600000143051147,
+            0.027000000700354576,
+            -0.14300000667572021
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_Floor_mesh",
+        "triangles": 2,
+        "exported_vertices": 4,
+        "bounds": [
+          [
+            -0.949999988079071,
+            -0.4000000059604645,
+            -0.41999998688697815
+          ],
+          [
+            0.949999988079071,
+            -0.4000000059604645,
+            1.0
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_FrontReturn_mesh",
+        "triangles": 2,
+        "exported_vertices": 4,
+        "bounds": [
+          [
+            -0.949999988079071,
+            -0.4000000059604645,
+            1.0
+          ],
+          [
+            0.949999988079071,
+            0.75,
+            1.0
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_Lamp_Left_mesh",
+        "triangles": 116,
+        "exported_vertices": 224,
+        "bounds": [
+          [
+            -0.2639999985694885,
+            0.0,
+            -0.1589999943971634
+          ],
+          [
+            -0.23600000143051147,
+            0.013000000268220901,
+            -0.13099999725818634
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_Lamp_Right_mesh",
+        "triangles": 116,
+        "exported_vertices": 224,
+        "bounds": [
+          [
+            0.23600000143051147,
+            0.0,
+            -0.1589999943971634
+          ],
+          [
+            0.2639999985694885,
+            0.013000000268220901,
+            -0.13099999725818634
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_LeftReturn_mesh",
+        "triangles": 2,
+        "exported_vertices": 4,
+        "bounds": [
+          [
+            -0.949999988079071,
+            -0.4000000059604645,
+            -0.41999998688697815
+          ],
+          [
+            -0.949999988079071,
+            0.75,
+            1.0
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_LongApron_mesh",
+        "triangles": 12,
+        "exported_vertices": 24,
+        "bounds": [
+          [
+            -0.2750000059604645,
+            -0.06800000369548798,
+            0.1535000056028366
+          ],
+          [
+            0.2750000059604645,
+            -0.02800000086426735,
+            0.17649999260902405
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_LongApron_mesh.001",
+        "triangles": 12,
+        "exported_vertices": 24,
+        "bounds": [
+          [
+            -0.2750000059604645,
+            -0.06800000369548798,
+            -0.17649999260902405
+          ],
+          [
+            0.2750000059604645,
+            -0.02800000086426735,
+            -0.1535000056028366
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_Oil_Left_mesh",
+        "triangles": 10,
+        "exported_vertices": 12,
+        "bounds": [
+          [
+            -0.2590000033378601,
+            0.012400000356137753,
+            -0.15399999916553497
+          ],
+          [
+            -0.2409999966621399,
+            0.012400000356137753,
+            -0.13600000739097595
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_Oil_Right_mesh",
+        "triangles": 10,
+        "exported_vertices": 12,
+        "bounds": [
+          [
+            0.2409999966621399,
+            0.012400000356137753,
+            -0.15399999916553497
+          ],
+          [
+            0.2590000033378601,
+            0.012400000356137753,
+            -0.13600000739097595
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_RightReturn_mesh",
+        "triangles": 2,
+        "exported_vertices": 4,
+        "bounds": [
+          [
+            0.949999988079071,
+            -0.4000000059604645,
+            -0.41999998688697815
+          ],
+          [
+            0.949999988079071,
+            0.75,
+            1.0
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_Spout_Left_mesh",
+        "triangles": 12,
+        "exported_vertices": 24,
+        "bounds": [
+          [
+            -0.26750001311302185,
+            0.007499999832361937,
+            -0.148499995470047
+          ],
+          [
+            -0.25850000977516174,
+            0.012500000186264515,
+            -0.14149999618530273
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_Spout_Right_mesh",
+        "triangles": 12,
+        "exported_vertices": 24,
+        "bounds": [
+          [
+            0.23250000178813934,
+            0.007499999832361937,
+            -0.148499995470047
+          ],
+          [
+            0.24150000512599945,
+            0.012500000186264515,
+            -0.14149999618530273
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_TableLeg_mesh",
+        "triangles": 12,
+        "exported_vertices": 24,
+        "bounds": [
+          [
+            -0.28200000524520874,
+            -0.4000000059604645,
+            0.14800000190734863
+          ],
+          [
+            -0.24799999594688416,
+            -0.02800000086426735,
+            0.18199999630451202
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_TableLeg_mesh.001",
+        "triangles": 12,
+        "exported_vertices": 24,
+        "bounds": [
+          [
+            -0.28200000524520874,
+            -0.4000000059604645,
+            -0.18199999630451202
+          ],
+          [
+            -0.24799999594688416,
+            -0.02800000086426735,
+            -0.14800000190734863
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_TableLeg_mesh.002",
+        "triangles": 12,
+        "exported_vertices": 24,
+        "bounds": [
+          [
+            0.24799999594688416,
+            -0.4000000059604645,
+            0.14800000190734863
+          ],
+          [
+            0.28200000524520874,
+            -0.02800000086426735,
+            0.18199999630451202
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_TableLeg_mesh.003",
+        "triangles": 12,
+        "exported_vertices": 24,
+        "bounds": [
+          [
+            0.24799999594688416,
+            -0.4000000059604645,
+            -0.18199999630451202
+          ],
+          [
+            0.28200000524520874,
+            -0.02800000086426735,
+            -0.14800000190734863
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_Tabletop_mesh",
+        "triangles": 12,
+        "exported_vertices": 24,
+        "bounds": [
+          [
+            -0.30000001192092896,
+            -0.02800000086426735,
+            -0.20000000298023224
+          ],
+          [
+            0.30000001192092896,
+            0.0,
+            0.20000000298023224
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_WallFoot_mesh",
+        "triangles": 12,
+        "exported_vertices": 24,
+        "bounds": [
+          [
+            -0.8550000190734863,
+            -0.4000000059604645,
+            -0.41850000619888306
+          ],
+          [
+            -0.7250000238418579,
+            -0.2800000011920929,
+            -0.38350000977516174
+          ]
+        ]
+      },
+      {
+        "name": "UR_Backdrop_WallFoot_mesh.001",
+        "triangles": 12,
+        "exported_vertices": 24,
+        "bounds": [
+          [
+            0.7250000238418579,
+            -0.4000000059604645,
+            -0.41850000619888306
+          ],
+          [
+            0.8550000190734863,
+            -0.2800000011920929,
+            -0.38350000977516174
+          ]
+        ]
+      },
       {
         "name": "UR_Board_mesh",
         "triangles": 284,
@@ -114,16 +995,37 @@
       },
       {
         "size": [
+          512,
+          512
+        ],
+        "mode": "RGB"
+      },
+      {
+        "size": [
+          256,
+          256
+        ],
+        "mode": "RGB"
+      },
+      {
+        "size": [
+          512,
+          512
+        ],
+        "mode": "RGB"
+      },
+      {
+        "size": [
           256,
           256
         ],
         "mode": "RGB"
       }
     ],
-    "triangles_per_eye": 2100,
-    "mesh_nodes": 19,
+    "triangles_per_eye": 2528,
+    "mesh_nodes": 44,
     "extensions_required": [],
-    "bytes": 272164
+    "bytes": 443676
   },
   "ur_counter_dark.glb": {
     "meshes": [
@@ -196,7 +1098,7 @@
   "ur_die.glb": {
     "meshes": [
       {
-        "name": "UR_Die_Tetrahedron_mesh.001",
+        "name": "UR_Die_mesh",
         "triangles": 20,
         "exported_vertices": 52,
         "bounds": [
@@ -225,6 +1127,159 @@
     "triangles_per_eye": 20,
     "mesh_nodes": 1,
     "extensions_required": [],
-    "bytes": 26256
-  }
+    "bytes": 19268
+  },
+  "revision_checks": {
+    "board_counter_mesh_attributes_indices_and_transforms_exactly_unchanged": [
+      "UR_Board",
+      "UR_Counter_Dark_01.001",
+      "UR_Counter_Dark_02",
+      "UR_Counter_Dark_03",
+      "UR_Counter_Dark_04",
+      "UR_Counter_Dark_05",
+      "UR_Counter_Dark_06",
+      "UR_Counter_Dark_07",
+      "UR_Counter_Shell_01.001",
+      "UR_Counter_Shell_02",
+      "UR_Counter_Shell_03",
+      "UR_Counter_Shell_04",
+      "UR_Counter_Shell_05",
+      "UR_Counter_Shell_06",
+      "UR_Counter_Shell_07"
+    ],
+    "dice_mesh_and_scene_transforms_unchanged": true,
+    "counter_atlas_rows_0_to_177_pixel_identical": true,
+    "all_changed_atlas_pixels_in_die_region": true,
+    "board_counter_standalone_glbs_byte_identical": true,
+    "dice_scoring_json_byte_identical": true,
+    "embedded_images_match_external_pngs": true,
+    "backdrop_opaque_single_sided": true,
+    "backdrop_material_count": 3,
+    "backdrop_node_transforms_identity": true,
+    "glb_camera_matches_camera_json": true,
+    "hardware_tested": false,
+    "complete_glb_reimported_and_rendered": true
+  },
+  "orbit_checks": [
+    {
+      "yaw_offset": -30,
+      "pitch": 35,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": -30,
+      "pitch": 45,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": -30,
+      "pitch": 55,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": -30,
+      "pitch": 70,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": -15,
+      "pitch": 35,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": -15,
+      "pitch": 45,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": -15,
+      "pitch": 55,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": -15,
+      "pitch": 70,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": 0,
+      "pitch": 35,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": 0,
+      "pitch": 45,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": 0,
+      "pitch": 55,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": 0,
+      "pitch": 70,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": 15,
+      "pitch": 35,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": 15,
+      "pitch": 45,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": 15,
+      "pitch": 55,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": 15,
+      "pitch": 70,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": 30,
+      "pitch": 35,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": 30,
+      "pitch": 45,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": 30,
+      "pitch": 55,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": 30,
+      "pitch": 70,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    }
+  ]
 }

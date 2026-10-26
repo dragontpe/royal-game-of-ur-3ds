@@ -1,100 +1,113 @@
-ROYAL GAME OF UR - OLD 3DS STEREO ASSET PACK
+ROYAL GAME OF UR - 3DS ASSETS / BABYLON ROOM REVISION
 
-Museum-inspired game assets built through the configured Blender MCP.
-The inlay artwork is an original simplified redraw, not a museum photo texture.
+CHANGED
+Added a 0.60 x 0.40 m wooden table, enclosed glazed-brick room, high lion and
+white-rosette frieze, floor, table supports and two low oil lamps. Back wall is
+Z=-0.42 m. Table top is exactly Y=0, supporting the original board and pieces.
+Backdrop artwork is an original simplified redraw based on inspected real
+Pergamon reconstruction photographs, not a photographic texture pasted on a wall.
+Warm illumination and edge falloff are stored in the room base-color PNGs.
+At the close gameplay angle the view is intentionally mostly quiet tabletop and
+plain blue brick. See babylon_room_overview.png for the high frieze and full room.
 
-FILES
-  glb/ur_board.glb                 Board, origin at bottom center
-  glb/ur_counter_shell.glb         One light counter, bottom-centered origin
-  glb/ur_counter_dark.glb          One dark counter, bottom-centered origin
-  glb/ur_die.glb                   One tetrahedral die, origin at base centroid
-  glb/ur_complete_set.glb          Board + 7 light + 7 dark counters + 4 dice
-  textures/*_basecolor.png         Standalone baked, opaque RGB textures
-  textures/t3x/*_rgb565.t3x        Ready for tex3ds/citro3d import
-  textures/t3x/*_etc1.t3x          Smaller compressed GPU-format alternatives
-  source/ur_assets.blend           Final editable, packed Blender source
-  board_layout.json                Tile centers/motifs in glTF meter coordinates
-  dice_scoring.json                Original marked-vertex directions for scoring
-  previews/                       Four views, details, native 400x240 and conversion previews
-  asset_report.json               Budgets, units, layout and counts
-  validation_report.json          Checks on the actual exported GLB binary contents
+Die-tip marks are approximately twice the old diameter and bright cream/white.
+Only the die region (PNG rows 178-255) was changed. All counter texels above it,
+board/counter geometry and transforms, board texture, standalone board/counter
+GLBs, board_layout.json and dice_scoring.json are unchanged. Dice mesh geometry
+and transforms are unchanged too: the same two vertices remain marked.
 
-COUNTS (ALL INCLUDE HIDDEN BOTTOM FACES)
-  Board:       284 triangles; 416 exported vertices
-  Counter:     124 triangles; 100 exported vertices, each
-  Die:          20 triangles;  52 exported vertices, each
-  Complete:  2,100 triangles per eye; 4,200 across two eye views
-  19 independently transformable mesh nodes, four mesh definitions, two materials.
-  Shared mesh definitions save memory; all visible copies still need rendering.
-  Actual performance has NOT been measured on a 3DS.
+PREVIOUS FILES
+Files replaced in this revision, including the old die and complete-set GLBs,
+pieces PNG/T3X files, source blend, reports and older previews, were MOVED into
+old/2026-10-26_before_backdrop_dice/ before installing replacements.
 
-TEXTURES
-  Board 512x512; pieces atlas 256x256 (both counter styles and all die faces).
-  Base-color PNGs include local AO and soft orientation-based lighting.
-  No PBR shading is needed: use the base-color image directly in the renderer.
-  Normals are included for your vertex format and any optional renderer use.
-  No vertex colors, extra UVs, tangents, skinning, morph targets or normal maps.
-  Do not multiply these images by a second strong diffuse lighting pass.
-  No moving-counter contact shadows are baked into the board.
-  No mipmaps were generated. Compare filtering at the actual gameplay camera.
-  RGB565 total base-level GPU texture storage: 655,360 bytes (640 KiB).
-  ETC1 total base-level GPU texture storage:   163,840 bytes (160 KiB).
-  These figures exclude .t3x headers and other runtime allocations.
-  Both formats were converted and their decoded previews inspected.
-  RGB565 is the recommended initial fidelity baseline; ETC1 is available to test.
-  Full-sheet .t3x textures: no sprite atlas trimming, repacking, rotation or border insertion.
-  Apply your renderer's glTF-to-citro3d texture-coordinate convention exactly once.
-  Compare orientation against top.png: the large end is at negative X and the center
-  rosette is in column 3, row 1. The source PNG and GLB embedded images are identical.
+DELIVERABLES
+  glb/ur_backdrop.glb             Backdrop only, identity transforms, world placed
+  glb/ur_complete_set.glb         Original set + room + gameplay camera
+  glb/ur_die.glb                  Original die geometry with enlarged marks
+  glb/ur_board.glb                Unchanged
+  glb/ur_counter_shell.glb        Unchanged
+  glb/ur_counter_dark.glb         Unchanged
+  textures/*_basecolor.png        Opaque baked RGB PNGs
+  textures/t3x/*_rgb565.t3x        Ready for Tex3DS_TextureImport
+  textures/t3x/*_etc1.t3x          High-quality ETC1 alternatives
+  source/ur_assets.blend          Updated original Blender scene, packed images
+  camera.json                    Perspective camera and orbit contract
+  board_layout.json              Original tile centers and motifs, unchanged
+  dice_scoring.json              Original marked-vertex directions, unchanged
+  asset_report.json              Geometry, texture sizes, bounds and orbit checks
+  validation_report.json         Actual binary GLB and preservation checks
 
-GLTF CONTRACT
-  Plain glTF 2.0 GLB, float POSITION/NORMAL/TEXCOORD_0 and triangle indices.
-  No required extensions and no mesh/texture compression extension.
-  Two ordinary opaque base-color materials; metallic=0, roughness=1.
-  PNG base-color images are embedded in GLBs as well as supplied separately.
-  Units: meters. glTF is +Y up. Board length along X; width along Z.
-  Board bounding box: X +/-0.1505, Y 0..0.024, Z +/-0.055.
-  Counter nominal diameter 0.0206, height 0.0033.
-  Die originally 0.017 base side / 0.013 height, slightly reduced by tiny edge bevels.
-  Individual asset nodes are at the origin, with identity rotation and unit scale.
-  For the complete-set GLB, apply all node transforms (including die rotations).
-  Counters placed on the board have base Y=0.024 and meet the top surface.
-  The scene is a display arrangement, not a prescribed starting game position.
-  Four dice are included as a reusable modern gameplay layout choice; use as many
-  as your selected rules require. This does not claim four dice belonged to BM 120834.
+BUDGETS
+  Board 284 triangles; each counter 124; each die 20, all unchanged.
+  Whole backdrop: 428 triangles, 25 mesh nodes, 3 materials / 3 textures.
+  Complete scene: 2,528 triangles per eye, 5,056 for two eye views, 44 mesh nodes.
+  Board + pieces textures: 512x512 and 256x256 (original sizes).
+  Added wall 512x512, furnishings 512x512, floor 256x256.
+  Complete scene: five materials and five textures (two original + three added).
+  Total GPU base-level texture storage: RGB565 1,835,008 bytes (1.75 MiB);
+  ETC1 458,752 bytes (448 KiB). Excludes buffers, headers and other allocations.
+  No mipmaps. RGB565 and ETC1 conversions and decoded previews included.
+  Runtime frame time and stereo comfort have NOT been tested on physical 3DS.
 
-HISTORICAL SCOPE
-  Main board: British Museum 120834 (registration 1928,1009.378), 2600-2400 BCE.
-  Twenty-square 4x3 + 2-square bridge + 2x3 shape; five rosettes and panel categories
-  matched to the museum top-down photograph. Shell, blue, red and dark joinery palette.
-  Shell counter based on 1928,1009.379.h: circular with five dark-blue inlaid dots;
-  the dark counterpart uses contrasting light dots. Seven copies of each.
-  Tetrahedral dice have TWO marked vertices, represented consistently on adjacent faces.
-  The original board was hollow; this closed exterior asset represents that box form.
-  Interior joinery, movable drawer hardware and individual inlay geometry are omitted.
-  Side decoration is simplified for the 3DS screen, not an archaeological reconstruction.
-  Clean readable surfaces are intentional; cracks and excavation damage are not reproduced.
+RENDERER CONTRACT
+Plain glTF 2.0 GLB; meters, +Y up, board length X and width Z.
+Triangle indices; float POSITION, NORMAL and TEXCOORD_0 only.
+Opaque materials, one base-color texture each. No required extensions, normal
+maps, vertex colors, skinning, morphs or tangents. Backdrop uses inward-facing
+single-sided walls. Lighting is baked: sample base color without another PBR
+or strong runtime diffuse pass. No alpha-blended lamp effects or flame billboards.
+Backdrop object transforms are identity: no additional placement transform needed.
+The complete GLB contains node transforms for the original game pieces; apply them.
+Apply your existing glTF-to-citro3d UV convention exactly once.
 
-REFERENCES
-  Board record:
-  https://www.britishmuseum.org/collection/object/W_1928-1009-378
-  Counter record:
-  https://www.britishmuseum.org/collection/object/W_1928-1009-379-h
-  Dice record:
-  https://www.britishmuseum.org/collection/object/W_1928-1009-385
-  Board top photograph (viewed for reference, not embedded in model textures):
-  https://media.britishmuseum.org/media/Repository/Documents/2014_11/12_20/d3d4b951_abe4_4872_8f24_a3e1015448dd/mid_00129984_001.jpg
-  Penn Museum excavation illustration:
-  https://www.penn.museum/sites/expedition/files/2018/05/citylife_8.jpg
-  Irving Finkel, On the Rules for the Royal Game of Ur:
-  https://genjam.org/wp-content/uploads/2021/09/onrules4gameofur.pdf
+CAMERA
+Position [0.10, 0.48, 0.32] m; look-at [0, 0.006, 0]; +Y up.
+Near 0.01 m, far 2.5 m, aspect 400/240. Radius 0.58058245 m.
+Default yaw 17.354 degrees, pitch 54.728 degrees.
+Orbit yaw is +/-30 degrees RELATIVE TO DEFAULT YAW; pitch is 35..70 degrees.
+Yaw convention: atan2(camera.x-target.x, camera.z-target.z).
+For yaw a and pitch p, at the fixed radius r:
+  position = target + [r*cos(p)*sin(a), r*sin(p), r*cos(p)*cos(a)].
+The earlier gameplay preview was orthographic, so it had no vertical FOV.
+This revision uses perspective with the same native-preview position, target and
+distance. Fixed vertical FOV is 35.2243 degrees, widened from the target-plane
+framing match to keep ALL original pieces visible at every tested orbit angle.
+This framing adjustment changes camera projection only, not board or counters.
+The GLB camera matches camera.json. Read exact values from camera.json.
 
-QA COMPLETED
-  Actual front, left, right, three-quarter and top renders inspected.
-  Close-ups checked and top/underside bake overlap corrected.
-  Exported complete GLB reimported into Blender; 19 mesh nodes / 2,100 triangles confirmed.
-  exported_assets_preview.png renders that REIMPORTED GLB, not the construction scene.
-  Binary GLBs checked for budgets, dimensions, one UV set, unit normals, finite data,
-  valid indices, nondegenerate triangles, opaque materials and lack of unwanted extensions.
-  RGB565/ETC1 conversions and their decoded atlas previews inspected.
-  Remaining integration check: stereo frame time and texture orientation on real hardware.
+PREVIEWS
+  gameplay_400x240.png            Actual reimported complete GLB / exported camera
+  babylon_gameplay_large.png      Same view at 1200x720
+  orbit_yaw_-30_pitch_35.png      Four corners of the allowed orbit envelope
+  orbit_yaw_+30_pitch_35.png
+  orbit_yaw_-30_pitch_70.png
+  orbit_yaw_+30_pitch_70.png
+  dice_marks_400x240.png          Actual dice positions on table, closer camera
+  babylon_room_overview.png       Wider view of the complete room and high frieze
+  room_front.png / room_left.png / room_right.png   Geometry inspection views
+  *_rgb565.png / *_etc1.png       Decoded texture-conversion previews
+
+VALIDATION
+Actual front, left, right, three-quarter and four orbit corner renders inspected.
+20 sampled yaw/pitch combinations passed 117 background ray checks each, plus
+rays to all board tiles and piece tops; no void and no backdrop occlusion found.
+Board/counter vertices, normals, UVs, indices and node transforms compared exactly
+to the prior complete GLB. Counter-region pixels and scoring file compared exactly.
+Updated complete GLB reimported into Blender: 44 meshes and 2,528 triangles.
+GLB camera FOV/aspect/clipping values checked against camera.json.
+Embedded PNGs checked against supplied external base-color images.
+Normals, indices, triangle budgets, texture bounds, opacity and extensions checked.
+
+INSPECTED PHOTO REFERENCES
+Processional Way reconstruction, Pergamon Museum:
+https://commons.wikimedia.org/wiki/File:Processional_Way_(Babylon).jpg
+Lion relief close-up:
+https://commons.wikimedia.org/wiki/File:Pergamon_Museum_Berlin_2007113.jpg
+Museum reconstruction context:
+https://www.smb.museum/en/museums-institutions/vorderasiatisches-museum/exhibitions/detail/from-fragment-to-monument/
+
+Original board / counter / dice references:
+https://www.britishmuseum.org/collection/object/W_1928-1009-378
+https://www.britishmuseum.org/collection/object/W_1928-1009-379-h
+https://www.britishmuseum.org/collection/object/W_1928-1009-385

@@ -1,0 +1,40 @@
+{
+  "coordinate_system": "glTF +Y up; meters; camera looks along local -Z",
+  "projection": "perspective",
+  "position": [
+    0.10000000149011612,
+    0.47999998927116394,
+    0.3199999928474426
+  ],
+  "look_at": [
+    0.0,
+    0.006000000052154064,
+    -0.0
+  ],
+  "up": [
+    0,
+    1,
+    0
+  ],
+  "vertical_fov_radians": 0.6147795248470213,
+  "vertical_fov_degrees": 35.22427210479245,
+  "aspect_ratio": 1.6666666666666667,
+  "near": 0.01,
+  "far": 2.5,
+  "orbit": {
+    "radius_m": 0.5805824500546843,
+    "yaw_reference": "atan2(camera.x-target.x,camera.z-target.z), degrees",
+    "default_yaw_degrees": 17.35402463626132,
+    "default_pitch_degrees": 54.72815868302819,
+    "yaw_offset_min_degrees": -30,
+    "yaw_offset_max_degrees": 30,
+    "pitch_min_degrees": 35,
+    "pitch_max_degrees": 70,
+    "target": [
+      0,
+      0.006,
+      0
+    ]
+  },
+  "projection_note": "Prior preview was orthographic; same native-preview direction and distance, perspective FOV widened slightly to keep all play meshes in frame over full orbit. Camera included in complete-set GLB."
+}

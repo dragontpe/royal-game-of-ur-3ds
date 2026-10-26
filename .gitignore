@@ -10,3 +10,9 @@ tools/az/azahar.log
 tools/az/winid
 tools/xcheck/.venv/
 host/build/
+tools/az/home2/
+tools/az/*.log
+romfs/gfx/
+romfs/sfx/
+design/shots/
+design/sfx/

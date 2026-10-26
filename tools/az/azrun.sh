@@ -3,7 +3,7 @@
 # Muted background Azahar run in an isolated HOME (tools/az/home), Old 3DS mode.
 # Kills only the Azahar it started (other sessions may run their own).
 # stereo: 3D slider at 100% and side-by-side output, so both eyes land in the shot.
-AZ=${0:A:h}; FH=$AZ/home; LOG=$AZ/azahar.log
+AZ=${0:A:h}; FH=${AZHOME:-$AZ/home}; LOG=$FH.log
 Q="$FH/Library/Application Support/Azahar/config/qt-config.ini"
 sed -i '' -e 's/^is_new_3ds=.*/is_new_3ds=false/' -e 's/^is_new_3ds\\default=.*/is_new_3ds\\default=false/' "$Q"
 if [ "$4" = stereo ]; then F=100; R=1; else F=0; R=0; fi

@@ -36,12 +36,12 @@ APP_TITLE	:=	Royal Game of Ur
 APP_DESCRIPTION	:=	The Royal Game of Ur
 APP_AUTHOR	:=	Frank
 BUILD		:=	build
-SOURCES		:=	source
+SOURCES		:=	source game
 DATA		:=	data
 INCLUDES	:=	source game
 GRAPHICS	:=	gfx
-GFXBUILD	:=	$(BUILD)
 ROMFS		:=	romfs
+GFXBUILD	:=	$(ROMFS)/gfx
 #ROMFS		:=	romfs
 #GFXBUILD	:=	$(ROMFS)/gfx
 
@@ -54,7 +54,7 @@ CFLAGS	:=	-g -Wall -O2 -mword-relocations \
 			-ffunction-sections \
 			$(ARCH)
 
-CFLAGS	+=	$(INCLUDE) -D__3DS__ -std=gnu99 $(if $(AUTOBENCH),-DUR_AUTOBENCH)
+CFLAGS	+=	$(INCLUDE) -D__3DS__ -std=gnu99 $(if $(ROBOT),-DUR_ROBOT -DUR_FUZZ)
 
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 

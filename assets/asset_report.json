@@ -2,13 +2,25 @@
   "board_triangles": 284,
   "counter_triangles_each": 124,
   "die_triangles_each": 20,
-  "scene_triangles_per_eye": 2100,
+  "scene_triangles_per_eye": 2528,
   "texture_dimensions": {
     "board": [
       512,
       512
     ],
     "pieces": [
+      256,
+      256
+    ],
+    "wall": [
+      512,
+      512
+    ],
+    "furnishings": [
+      512,
+      512
+    ],
+    "floor": [
       256,
       256
     ]
@@ -53,6 +65,202 @@
       "star"
     ]
   ],
-  "runtime_objects": 19,
-  "stereo_triangles": 4200
+  "runtime_objects": 44,
+  "stereo_triangles": 5056,
+  "revision": "Babylon backdrop and enlarged dice marks",
+  "backdrop_triangles": 428,
+  "backdrop_mesh_nodes": 25,
+  "backdrop_materials": 3,
+  "board_counter_geometry_transforms_unchanged": true,
+  "camera": {
+    "coordinate_system": "glTF +Y up; meters; camera looks along local -Z",
+    "projection": "perspective",
+    "position": [
+      0.10000000149011612,
+      0.47999998927116394,
+      0.3199999928474426
+    ],
+    "look_at": [
+      0.0,
+      0.006000000052154064,
+      -0.0
+    ],
+    "up": [
+      0,
+      1,
+      0
+    ],
+    "vertical_fov_radians": 0.6147795248470213,
+    "vertical_fov_degrees": 35.22427210479245,
+    "aspect_ratio": 1.6666666666666667,
+    "near": 0.01,
+    "far": 2.5,
+    "orbit": {
+      "radius_m": 0.5805824500546843,
+      "yaw_reference": "atan2(camera.x-target.x,camera.z-target.z), degrees",
+      "default_yaw_degrees": 17.35402463626132,
+      "default_pitch_degrees": 54.72815868302819,
+      "yaw_offset_min_degrees": -30,
+      "yaw_offset_max_degrees": 30,
+      "pitch_min_degrees": 35,
+      "pitch_max_degrees": 70,
+      "target": [
+        0,
+        0.006,
+        0
+      ]
+    },
+    "projection_note": "Prior preview was orthographic; same native-preview direction and distance, perspective FOV widened slightly to keep all play meshes in frame over full orbit. Camera included in complete-set GLB."
+  },
+  "room_bounds_gltf": [
+    [
+      -0.95,
+      -0.4,
+      -0.42
+    ],
+    [
+      0.95,
+      0.75,
+      1
+    ]
+  ],
+  "tabletop_gltf_dimensions": [
+    0.6,
+    0.028,
+    0.4
+  ],
+  "tabletop_top_y": 0,
+  "back_wall_z": -0.42,
+  "orbit_checks": [
+    {
+      "yaw_offset": -30,
+      "pitch": 35,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": -30,
+      "pitch": 45,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": -30,
+      "pitch": 55,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": -30,
+      "pitch": 70,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": -15,
+      "pitch": 35,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": -15,
+      "pitch": 45,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": -15,
+      "pitch": 55,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": -15,
+      "pitch": 70,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": 0,
+      "pitch": 35,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": 0,
+      "pitch": 45,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": 0,
+      "pitch": 55,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": 0,
+      "pitch": 70,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": 15,
+      "pitch": 35,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": 15,
+      "pitch": 45,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": 15,
+      "pitch": 55,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": 15,
+      "pitch": 70,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": 30,
+      "pitch": 35,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": 30,
+      "pitch": 45,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": 30,
+      "pitch": 55,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    },
+    {
+      "yaw_offset": 30,
+      "pitch": 70,
+      "missing_background_rays": 0,
+      "room_occluded_play_points": 0
+    }
+  ],
+  "backdrop_shading": "Original texture artwork with baked warm illumination and edge falloff; sample directly, no runtime lights.",
+  "references": [
+    "https://commons.wikimedia.org/wiki/File:Processional_Way_(Babylon).jpg",
+    "https://commons.wikimedia.org/wiki/File:Pergamon_Museum_Berlin_2007113.jpg",
+    "https://www.smb.museum/en/museums-institutions/vorderasiatisches-museum/exhibitions/detail/from-fragment-to-monument/"
+  ],
+  "total_texture_gpu_bytes_rgb565": 1835008,
+  "total_texture_gpu_bytes_etc1": 458752,
+  "counter_pixels_preserved": true,
+  "hardware_tested": false
 }

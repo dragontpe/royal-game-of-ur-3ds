@@ -2,15 +2,18 @@
 """Convert the Ur asset-pack GLB into romfs/scene.bin for the 3DS renderer.
 
 Layout (little endian):
-  'URS1' u32 mesh_count u32 node_count
+  'URS2' u32 texture_count u32 mesh_count u32 node_count
+  per texture: 32-byte NUL-padded name (romfs:/tex/<name>_<format>.t3x)
   per mesh:  u32 material, u32 vertex_count, u32 index_count,
              vertex_count * (f32 px py pz  u v  nx ny nz),
              index_count * u16, padded to 4 bytes
   per node:  u32 mesh, u32 kind, 16 * f32 matrix (column major)
 
-Materials: 0 = board texture, 1 = pieces atlas, 2+ = extra textures listed in
-the order they first appear (printed so the loader table can match).
-Kinds: 0 static (board, backdrop), 1 light counter, 2 dark counter, 3 die.
+Material = index into the texture table.
+Kinds: 0 static, 1 light counter, 2 dark counter, 3 die, 4 lamp flame.
+Static nodes (board + room) are pre-transformed and merged into one mesh per
+texture, so the room costs a handful of draw calls; everything else keeps its
+own node so the game can move or tint it.
 
 UVs: glTF has v=0 at the top of the image; tex3ds textures put t=0 at the
 bottom, so v is flipped here and nowhere else.
@@ -78,21 +81,27 @@ def mat_mul(a, b):
 
 
 def node_kind(name):
-    n = name.lower()
-    if 'shell' in n or 'light' in n:
+    if name.startswith('UR_Counter_Shell'):
         return 1
-    if 'dark' in n:
+    if name.startswith('UR_Counter_Dark'):
         return 2
-    if 'die' in n or 'dice' in n:
+    if name.startswith('UR_Die'):
         return 3
+    if name.startswith('UR_Backdrop_Flame'):
+        return 4
     return 0
+
+
+def transform(m, p, w):
+    return tuple(m[0 * 4 + r] * p[0] + m[1 * 4 + r] * p[1] + m[2 * 4 + r] * p[2] + m[3 * 4 + r] * w
+                 for r in range(3))
 
 
 def main():
     if len(sys.argv) < 3:
         sys.exit('usage: glb2scene.py out.bin in.glb [in2.glb ...]')
     out_path, inputs = sys.argv[1], sys.argv[2:]
-    images = {'ur_board_basecolor': 0, 'ur_pieces_basecolor': 1}
+    images = {}
     meshes, nodes = [], []
     for path in inputs:
         doc, binc = read_glb(path)
@@ -125,7 +134,42 @@ def main():
         for root in doc['scenes'][doc.get('scene', 0)]['nodes']:
             walk(root, ident)
 
-    blob = bytearray(b'URS1' + struct.pack('<II', len(meshes), len(nodes)))
+    # Merge static nodes per texture.
+    merged = {}
+    dynamic = []
+    for mesh, kind, m in nodes:
+        if kind != 0:
+            dynamic.append((mesh, kind, m))
+            continue
+        mat, pos, uv, nrm, idx, name = meshes[mesh]
+        dst = merged.setdefault(mat, ([], [], [], []))
+        base = len(dst[0])
+        for p, n in zip(pos, nrm):
+            dst[0].append(transform(m, p, 1.0))
+            t = transform(m, n, 0.0)
+            l = (t[0] ** 2 + t[1] ** 2 + t[2] ** 2) ** 0.5 or 1.0
+            dst[2].append((t[0] / l, t[1] / l, t[2] / l))
+        dst[1].extend(uv)
+        dst[3].extend(i + base for i in idx)
+    used = sorted({mesh for mesh, _, _ in dynamic})
+    remap = {old: i for i, old in enumerate(used)}
+    out_meshes = [meshes[i] for i in used]
+    ident = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+    out_nodes = []
+    for mat in sorted(merged):
+        pos, uv, nrm, idx = merged[mat]
+        assert len(pos) < 65536
+        out_nodes.append((len(out_meshes), 0, ident))
+        out_meshes.append((mat, pos, uv, nrm, idx, 'static_' + [k for k, v in images.items() if v == mat][0]))
+    out_nodes += [(remap[mesh], kind, m) for mesh, kind, m in dynamic]
+    meshes, nodes = out_meshes, out_nodes
+
+    names = sorted(images, key=images.get)
+    blob = bytearray(b'URS2' + struct.pack('<III', len(names), len(meshes), len(nodes)))
+    for n in names:
+        tname = n[:-len('_basecolor')] if n.endswith('_basecolor') else n
+        assert len(tname) < 32
+        blob += tname.encode().ljust(32, b'\0')
     for mat, pos, uv, nrm, idx, _ in meshes:
         blob += struct.pack('<III', mat, len(pos), len(idx))
         for p, t, n in zip(pos, uv, nrm):
@@ -141,7 +185,8 @@ def main():
     print('%s: %d meshes, %d nodes, %d triangles per eye, %d bytes' %
           (out_path, len(meshes), len(nodes), tris, len(blob)))
     for i, (mat, pos, _, _, idx, name) in enumerate(meshes):
-        print('  mesh %d %-28s material %d  %d verts  %d tris' % (i, name, mat, len(pos), len(idx) // 3))
+        print('  mesh %d %-30s material %d  %5d verts  %4d tris' % (i, name, mat, len(pos), len(idx) // 3))
+    print('  nodes by kind:', {k: sum(1 for n in nodes if n[1] == k) for k in range(5)})
     print('  textures:', ', '.join('%d=%s' % (v, k) for k, v in sorted(images.items(), key=lambda kv: kv[1])))
 
 

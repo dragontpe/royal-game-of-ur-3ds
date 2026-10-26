@@ -46,12 +46,20 @@ bool scene_load(Scene *s, const char *path)
 		return false;
 
 	const u8 *p = data;
-	if (size < 12 || memcmp(p, "URS1", 4) != 0)
+	if (size < 16 || memcmp(p, "URS2", 4) != 0)
 		goto fail;
-	u32 mc, nc;
-	memcpy(&mc, p + 4, 4);
-	memcpy(&nc, p + 8, 4);
-	p += 12;
+	u32 tc, mc, nc;
+	memcpy(&tc, p + 4, 4);
+	memcpy(&mc, p + 8, 4);
+	memcpy(&nc, p + 12, 4);
+	p += 16;
+	if (tc > SCENE_MAX_TEX)
+		goto fail;
+	s->tex_count = tc;
+	for (u32 i = 0; i < tc; i++, p += 32) {
+		memcpy(s->tex_names[i], p, 31);
+		s->tex_names[i][31] = 0;
+	}
 	s->meshes = calloc(mc, sizeof(Mesh));
 	s->nodes = calloc(nc, sizeof(Node));
 	s->mesh_count = mc;
@@ -105,11 +113,15 @@ void scene_free(Scene *s)
 
 bool tex_load(C3D_Tex *tex, const char *path)
 {
-	FILE *f = fopen(path, "rb");
-	if (!f)
-		return false;
-	Tex3DS_Texture t3x = Tex3DS_TextureImportStdio(f, tex, NULL, true);
-	fclose(f);
+	/* VRAM first; fall back to linear memory if VRAM is full. */
+	Tex3DS_Texture t3x = NULL;
+	for (int vram = 1; vram >= 0 && !t3x; vram--) {
+		FILE *f = fopen(path, "rb");
+		if (!f)
+			return false;
+		t3x = Tex3DS_TextureImportStdio(f, tex, NULL, vram);
+		fclose(f);
+	}
 	if (!t3x)
 		return false;
 	Tex3DS_TextureFree(t3x);
@@ -178,4 +190,31 @@ void render_mesh(const Mesh *m, const C3D_Mtx *model, C3D_Tex *tex, const float 
 
 	C3D_TexBind(0, tex);
 	C3D_DrawElements(GPU_TRIANGLES, m->icount, C3D_UNSIGNED_SHORT, m->ibo);
+}
+
+void render_decal_mode(bool on)
+{
+	C3D_DepthTest(true, GPU_GREATER, on ? GPU_WRITE_COLOR : GPU_WRITE_ALL);
+	C3D_CullFace(on ? GPU_CULL_NONE : GPU_CULL_BACK_CCW);
+}
+
+bool mesh_quad(Mesh *m, float u0, float v0, float u1, float v1)
+{
+	const float v[4][8] = {
+		{ -0.5f, 0, -0.5f, u0, v0, 0, 1, 0 },
+		{ -0.5f, 0, 0.5f, u0, v1, 0, 1, 0 },
+		{ 0.5f, 0, 0.5f, u1, v1, 0, 1, 0 },
+		{ 0.5f, 0, -0.5f, u1, v0, 0, 1, 0 },
+	};
+	static const u16 idx[6] = { 0, 1, 2, 0, 2, 3 };
+	m->material = 0;
+	m->vcount = 4;
+	m->icount = 6;
+	m->vbo = linearAlloc(sizeof(v));
+	m->ibo = linearAlloc(sizeof(idx));
+	if (!m->vbo || !m->ibo)
+		return false;
+	memcpy(m->vbo, v, sizeof(v));
+	memcpy(m->ibo, idx, sizeof(idx));
+	return true;
 }
