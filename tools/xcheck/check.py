@@ -11,13 +11,9 @@ P = [PlayerType.LIGHT, PlayerType.DARK]   # C player 0 = LIGHT, 1 = DARK
 def make_game(board):
     if board == 0:
         return Game.create_finkel()
-    # Library aseb preset = aseb shape + aseb paths + 4 binary dice + safe rosettes + extra roll on
-    # rosettes, no extra roll on capture -- but 5 starting pieces. We need 7 (Finkel count), so build
-    # the same settings with 7 pieces.
-    from royalur import GameSettings, BoardType, PathType, DiceType
-    s = GameSettings(BoardType.ASEB.create_board_shape(), PathType.ASEB.create_path_pair(),
-                     lambda: DiceType.FOUR_BINARY.create_dice(), 7, True, True, False)
-    return Game.create(s)
+    # The library's own aseb preset, unmodified: aseb shape and paths, 4 binary dice, safe rosettes,
+    # extra roll on rosettes, none on capture, 5 starting pieces.
+    return Game.create_aseb()
 
 
 OFF = {0: 15, 1: 17}
@@ -113,7 +109,7 @@ def main(path):
                             game.make_move(m)
                             break
                     moves += 1
-    print(f"board: {'Ur (Finkel)' if board == 0 else 'Twenty Squares (aseb, 7 pieces)'}")
+    print(f"board: {'Ur (Finkel)' if board == 0 else 'Twenty Squares (RoyalUr aseb preset, 5 pieces)'}")
     print(f"games compared: {games}")
     print(f"rolls compared: {turns} (moves played {moves}, passes {turns - moves})")
     print(f"mismatches: {len(mismatches)}")

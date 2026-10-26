@@ -4,9 +4,9 @@ const uint8_t UR_ROLL_WEIGHT[5] = { 1, 4, 6, 4, 1 };
 
 const UrBoardDef UR_BOARDS[UR_BOARD_COUNT] = {
     { "Ur",             14,  5, 12, (1u << 4) | (1u << 8) | (1u << 14),
-                                    1u << 8, 8 },
+                                    1u << 8, 8, 7 },
     { "Twenty Squares", 16,  5, 16, (1u << 4) | (1u << 8) | (1u << 12) | (1u << 16),
-                                    (1u << 8) | (1u << 12) | (1u << 16), 12 }
+                                    (1u << 8) | (1u << 12) | (1u << 16), 12, 5 }
 };
 
 static const UrBoardDef *bd(int board)
@@ -57,11 +57,13 @@ int ur_roll(UrRng *r)
 void ur_init(UrPos *p, int first_player, int board)
 {
     p->mask[0] = p->mask[1] = 0;
-    p->pool[0] = p->pool[1] = UR_PIECES;
+    p->board = (uint8_t)(board == UR_BOARD_TWENTY ? UR_BOARD_TWENTY : UR_BOARD_UR);
+    p->pool[0] = p->pool[1] = (uint8_t)bd(p->board)->pieces;
     p->done[0] = p->done[1] = 0;
     p->turn = (uint8_t)(first_player & 1);
-    p->board = (uint8_t)(board == UR_BOARD_TWENTY ? UR_BOARD_TWENTY : UR_BOARD_UR);
 }
+
+int ur_pieces(int board) { return bd(board)->pieces; }
 
 int ur_off(const UrPos *p) { return bd(p->board)->track + 1; }
 
@@ -133,7 +135,7 @@ UrMoveResult ur_apply(UrPos *p, UrMove m, int roll)
     if (m.to == b->track + 1) {
         p->done[me]++;
         r.borne_off = true;
-        if (p->done[me] == UR_PIECES)
+        if (p->done[me] == b->pieces)
             r.winner = (int8_t)me;
     } else {
         p->mask[me] |= 1u << m.to;
@@ -157,8 +159,9 @@ void ur_pass(UrPos *p)
 
 int ur_winner(const UrPos *p)
 {
-    if (p->done[0] == UR_PIECES) return 0;
-    if (p->done[1] == UR_PIECES) return 1;
+    const int n = bd(p->board)->pieces;
+    if (p->done[0] == n) return 0;
+    if (p->done[1] == n) return 1;
     return -1;
 }
 
@@ -178,7 +181,7 @@ bool ur_pos_valid(const UrPos *p)
     for (int i = 0; i < 2; i++) {
         if (p->mask[i] & ~legal)
             return false;
-        if (p->pool[i] + p->done[i] + popcount32(p->mask[i]) != UR_PIECES)
+        if (p->pool[i] + p->done[i] + popcount32(p->mask[i]) != b->pieces)
             return false;
     }
     /* shared squares: never held by both sides */
@@ -187,7 +190,7 @@ bool ur_pos_valid(const UrPos *p)
         sharedbits |= 1u << s;
     if (p->mask[0] & p->mask[1] & sharedbits)
         return false;
-    return !(p->done[0] == UR_PIECES && p->done[1] == UR_PIECES);
+    return !(p->done[0] == b->pieces && p->done[1] == b->pieces);
 }
 
 /* ---- board cells ---- */

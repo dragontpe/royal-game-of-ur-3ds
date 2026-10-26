@@ -3,6 +3,11 @@
 Homebrew for the Nintendo 3DS by No Banners Software. Finkel rules, three
 computer opponents (Beginner, Medium, Expert) and a two-player mode.
 
+Two boards: the Ur board (Finkel rules, 7 pieces a side) and the later
+Egyptian "Twenty Squares" board (RoyalUr's aseb preset: 16-step track,
+rosettes every fourth step, 5 pieces a side, as on the 177 BC tablet).
+`tools/xcheck/run.sh` checks both against RoyalUr's Python library.
+
 - Top screen: Frank's Blender board in stereo 3D. Straight top-down during
   play; the lamp-lit Babylon room in the menus.
 - Bottom screen: menus and a touch map of the board.

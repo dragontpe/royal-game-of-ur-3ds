@@ -168,7 +168,8 @@ void play_new(PlayMode mode, UrLevel level, int board)
 	char m[48];
 	snprintf(m, sizeof(m), G.pos.turn == 0 && mode == MODE_AI ? "You go first" : "%s goes first",
 	         name_of(G.pos.turn));
-	say(m, mode == MODE_AI ? "Race all seven pieces home" : "Pass the 3DS between turns", false);
+	say(m, mode != MODE_AI ? "Pass the 3DS between turns"
+	       : board == UR_BOARD_TWENTY ? "Race all five pieces home" : "Race all seven pieces home", false);
 	if (mode == MODE_AI)
 		settings.last_level = level;
 	settings.last_board = board;
@@ -284,7 +285,7 @@ static void after_move(void)
 			say("Captured!", m, false);
 		}
 	} else if (r->borne_off) {
-		snprintf(m, sizeof(m), "%d of 7 home", G.pos.done[p]);
+		snprintf(m, sizeof(m), "%d of %d home", G.pos.done[p], ur_pieces(G.pos.board));
 		say(p == 0 && G.mode == MODE_AI ? "Piece home" : "Home", m, false);
 	}
 	G.phase = PH_AFTER;
@@ -588,11 +589,11 @@ static void player_row(int y, int player)
 	text(TS_HEAD, 42, y + 13, A_LEFT, "%s", nm);
 	if (active)
 		draw_rect(42, y + 23, text_w(TS_HEAD, nm), 3, COL_ACTIVE);
-	if (G.pos.pool[player] > 0 && G.pos.pool[player] < UR_PIECES)
+	if (G.pos.pool[player] > 0 && G.pos.pool[player] < ur_pieces(G.pos.board))
 		text(TS_BODY, 50 + text_w(TS_HEAD, nm), y + 13, A_LEFT, "%d waiting", G.pos.pool[player]);
 	text(TS_BODY, HOME_X - 6, y + 13, A_RIGHT, "Home");
 	panel(P_BOX3, HOME_X, y + 2, HOME_W, 22);
-	text(TS_NUM, HOME_X + HOME_W / 2, y + 13, A_CENTER, "%d/7", G.pos.done[player]);
+	text(TS_NUM, HOME_X + HOME_W / 2, y + 13, A_CENTER, "%d/%d", G.pos.done[player], ur_pieces(G.pos.board));
 }
 
 static void draw_pieces(void)

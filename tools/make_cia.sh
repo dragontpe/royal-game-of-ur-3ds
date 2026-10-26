@@ -7,7 +7,7 @@ export DEVKITPRO=/opt/devkitpro DEVKITARM=/opt/devkitpro/devkitARM
 export PATH=$DEVKITPRO/tools/bin:$DEVKITARM/bin:$PATH
 MAKEROM=$HOME/gammon-x/vendor/tools/Project_CTR/makerom/bin/makerom
 BANNERTOOL=$HOME/gammon-x/vendor/tools/bannertool/output/manual/bannertool
-VERSION_MAJOR=0 VERSION_MINOR=10 VERSION_MICRO=0
+VERSION_MAJOR=0 VERSION_MINOR=11 VERSION_MICRO=0
 
 make >/dev/null
 mkdir -p build/cia

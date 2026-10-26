@@ -45,6 +45,7 @@ typedef struct {
 } Die;
 
 static Piece pc[2][UR_PIECES];
+static int npieces = UR_PIECES;   /* in play on this board; the rest stay hidden */
 static Die dice[4];
 static int board;           /* UR_BOARD_UR or UR_BOARD_TWENTY */
 static int mesh_board[UR_BOARD_COUNT] = { -1, -1 };
@@ -117,7 +118,7 @@ static V3 cell_pos(int row, int col)
 }
 
 /* Waiting pieces fill from the entry side, borne-off pieces from the far
- * end; the two never meet because together they are at most seven. On Ur
+ * end; the two never meet because together they are at most a full set. On Ur
  * they sit in a row in front of the board; on Twenty Squares beside the arm. */
 static V3 slot_pos(int player, bool off, int slot)
 {
@@ -157,7 +158,7 @@ static V3 step_pos(int player, int step, int slot)
 void world_step_pos(int player, int step, float *x, float *z)
 {
 	int n = 0;
-	for (int i = 0; i < UR_PIECES; i++)
+	for (int i = 0; i < npieces; i++)
 		if (pc[player][i].step == step)
 			n++;
 	V3 v = step_pos(player, step, step == 0 ? n - 1 : n);
@@ -227,6 +228,7 @@ int world_board(void)
 void world_reset(const UrPos *p)
 {
 	board = p->board < UR_BOARD_COUNT ? p->board : UR_BOARD_UR;
+	npieces = ur_pieces(board);
 	int track = UR_BOARDS[board].track;
 	for (int pl = 0; pl < 2; pl++) {
 		int k = 0, pool = 0, off = 0;
@@ -244,7 +246,7 @@ void world_reset(const UrPos *p)
 			pc[pl][k].step = track + 1;
 			pc[pl][k].slot = off++;
 		}
-		for (int i = 0; i < UR_PIECES; i++) {
+		for (int i = 0; i < npieces; i++) {
 			Piece *q = &pc[pl][i];
 			q->pos = step_pos(pl, q->step, q->slot);
 			q->npath = 0;
@@ -278,7 +280,7 @@ static void path_add(Piece *q, V3 to, float dur, float arc)
 static Piece *find_piece(int pl, int step)
 {
 	Piece *best = NULL;
-	for (int i = 0; i < UR_PIECES; i++) {
+	for (int i = 0; i < npieces; i++) {
 		Piece *q = &pc[pl][i];
 		if (q->step != step)
 			continue;
@@ -292,7 +294,7 @@ static Piece *find_piece(int pl, int step)
 static int count_step(int pl, int step)
 {
 	int n = 0;
-	for (int i = 0; i < UR_PIECES; i++)
+	for (int i = 0; i < npieces; i++)
 		n += pc[pl][i].step == step;
 	return n;
 }
@@ -322,7 +324,7 @@ void world_move(const UrMoveResult *r)
 		float wait = 0;
 		for (int i = 0; i < q->npath - 1; i++)
 			wait += q->dur[i];
-		for (int i = 0; i < UR_PIECES; i++) {
+		for (int i = 0; i < npieces; i++) {
 			Piece *v = &pc[opp][i];
 			if (v->step != r->to)
 				continue;
@@ -337,14 +339,14 @@ void world_move(const UrMoveResult *r)
 	/* close the gap in the pool: everyone slides toward slot 0 */
 	if (r->from == 0) {
 		int order = 0;
-		for (int slot = 0; slot < UR_PIECES; slot++)
-			for (int i = 0; i < UR_PIECES; i++) {
+		for (int slot = 0; slot < npieces; slot++)
+			for (int i = 0; i < npieces; i++) {
 				Piece *w = &pc[pl][i];
 				if (w->step == 0 && w->slot == slot && w->npath == 0) {
 					w->slot = order++;
 				}
 			}
-		for (int i = 0; i < UR_PIECES; i++) {
+		for (int i = 0; i < npieces; i++) {
 			Piece *w = &pc[pl][i];
 			V3 want = step_pos(pl, 0, w->slot);
 			if (w->step == 0 && w->npath == 0 && (fabsf(want.x - w->pos.x) > 1e-4f)) {
@@ -513,7 +515,7 @@ static void die_matrix(const Die *d, C3D_Mtx *out)
 bool world_busy(void)
 {
 	for (int p = 0; p < 2; p++)
-		for (int i = 0; i < UR_PIECES; i++)
+		for (int i = 0; i < npieces; i++)
 			if (pc[p][i].npath >= 2)
 				return true;
 	for (int i = 0; i < 4; i++)
@@ -526,7 +528,7 @@ void world_update(float dt)
 {
 	clock_s += dt;
 	for (int p = 0; p < 2; p++)
-		for (int i = 0; i < UR_PIECES; i++) {
+		for (int i = 0; i < npieces; i++) {
 			Piece *q = &pc[p][i];
 			piece_update(q, dt);
 			float want = (p == hl_player && (hl[q->step] & HL_SELECTED) && q->npath == 0 &&
@@ -572,7 +574,7 @@ void world_draw(int fmt, C3D_Tex tex[][2], bool flames_on)
 	}
 	for (int p = 0; p < 2; p++) {
 		const Mesh *me = &sc->meshes[p == 0 ? mesh_light : mesh_dark];
-		for (int i = 0; i < UR_PIECES; i++) {
+		for (int i = 0; i < npieces; i++) {
 			Piece *q = &pc[p][i];
 			Mtx_Identity(&m);
 			Mtx_Translate(&m, q->pos.x, q->pos.y + q->lift, q->pos.z, true);
@@ -590,7 +592,7 @@ void world_draw(int fmt, C3D_Tex tex[][2], bool flames_on)
 	/* decals: alpha blended, no depth writes */
 	render_decal_mode(true);
 	for (int p = 0; p < 2; p++)
-		for (int i = 0; i < UR_PIECES; i++) {
+		for (int i = 0; i < npieces; i++) {
 			Piece *q = &pc[p][i];
 			float g = ground_at(q->pos.x, q->pos.z);
 			float h = q->pos.y + q->lift - g;

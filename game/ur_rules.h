@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define UR_PIECES     7    /* pieces per side */
+#define UR_PIECES     7    /* most pieces per side (array size); see UrBoardDef.pieces */
 #define UR_MAX_TRACK  16   /* longest track (Twenty Squares) */
 #define UR_MAX_MOVES  7
 
@@ -20,6 +20,7 @@ typedef struct {
     uint32_t rosettes;  /* bit s: step s is a rosette (extra roll) */
     uint32_t safe;      /* bit s: shared rosette (cannot be captured / landed on by the enemy) */
     int      cols;      /* 8 or 12 */
+    int      pieces;    /* per side: 7 (Ur, Finkel) or 5 (Twenty Squares, as on the 177 BC tablet) */
 } UrBoardDef;
 
 extern const UrBoardDef UR_BOARDS[UR_BOARD_COUNT];
@@ -58,6 +59,7 @@ int      ur_roll(UrRng *r);                    /* 0..4: four coin flips */
 extern const uint8_t UR_ROLL_WEIGHT[5];
 
 void ur_init(UrPos *p, int first_player, int board);
+int  ur_pieces(int board);   /* pieces per side on this board */
 int  ur_off(const UrPos *p);                   /* track + 1: the "borne off" step */
 
 bool ur_is_rosette(int board, int step);       /* Ur: 4, 8, 14; Twenty: 4, 8, 12, 16 */

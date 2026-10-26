@@ -17,7 +17,7 @@ static const Page rules[] = {
 	{ "Moving", "Move one piece exactly that many squares, either a new piece or one already on the board. You can't land on your own piece, and leaving the board takes the exact number.", ILL_MOVE },
 	{ "Captures", "The middle row is shared. Land on an enemy piece there and it goes back to the start. Your first four squares and your last two are safe.", ILL_SHARED },
 	{ "Rosettes", "Land on a rosette and you throw again. The rosette in the middle is safe: a piece there can't be captured, and the other player can't land on it.", ILL_ROSETTE },
-	{ "Twenty Squares", "Same five rosettes, but a 16-square track: four of your own, then the whole long arm, which both players share. Every fourth square is a rosette; the three on the arm are safe.", ILL_TWENTY },
+	{ "Twenty Squares", "Five pieces each and a 16-square track: four of your own, then the whole long arm, which both players share. Every fourth square is a rosette; the three on the arm are safe.", ILL_TWENTY },
 	{ "Controls", "Stylus: tap Roll, then tap a ringed piece or its outlined square.\nButtons: A rolls, the D-pad picks a move, A plays it.\nSTART pauses. The game saves every turn.", ILL_CONTROLS },
 };
 

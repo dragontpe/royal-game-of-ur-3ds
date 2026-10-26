@@ -19,8 +19,8 @@ static UrPos mk(int turn, const int *a, int na, int done_a, const int *b, int nb
     for (int i = 0; i < na; i++) p.mask[0] |= 1u << a[i];
     for (int i = 0; i < nb; i++) p.mask[1] |= 1u << b[i];
     p.done[0] = (uint8_t)done_a; p.done[1] = (uint8_t)done_b;
-    p.pool[0] = (uint8_t)(UR_PIECES - na - done_a);
-    p.pool[1] = (uint8_t)(UR_PIECES - nb - done_b);
+    p.pool[0] = (uint8_t)(ur_pieces(g_board) - na - done_a);
+    p.pool[1] = (uint8_t)(ur_pieces(g_board) - nb - done_b);
     return p;
 }
 
@@ -301,7 +301,7 @@ static void check_invariants(const UrPos *p)
     for (int i = 0; i < 2; i++) {
         int n = 0;
         for (int s = 1; s <= UR_MAX_TRACK; s++) n += (p->mask[i] >> s) & 1;
-        CHECK(n + p->pool[i] + p->done[i] == 7);
+        CHECK(n + p->pool[i] + p->done[i] == (p->board == UR_BOARD_UR ? 7 : 5));
         CHECK((p->mask[i] >> (ur_off(p))) == 0 && !(p->mask[i] & 1u));   /* only bits 1..track */
     }
     /* literal expectations: shared steps are 5..12 (Ur) or 5..16 (Twenty) */
@@ -354,7 +354,8 @@ static FuzzStats fuzz(int board, int games, uint64_t seed)
             CHECK(p.pool[before.turn ^ 1] == before.pool[before.turn ^ 1] + r.captured);
         }
         int w = ur_winner(&p);
-        CHECK(w >= 0 && p.done[w] == 7 && p.done[w ^ 1] < 7);
+        int np = board == UR_BOARD_UR ? 7 : 5;
+        CHECK(w >= 0 && p.done[w] == np && p.done[w ^ 1] < np);
         st.games++;
         if (turns > st.maxturns) st.maxturns = turns;
     }
@@ -391,7 +392,7 @@ static void test_ai_basic(void)
     /* expert takes an immediate win */
     int fin = UR_BOARDS[g_board].track - 1;
     int a[] = {fin}, b[] = {9, 10, 11};
-    UrPos p = mk(0, a, 1, 6, b, 3, 0);
+    UrPos p = mk(0, a, 1, ur_pieces(g_board) - 1, b, 3, 0);
     UrMove m = ur_ai_choose(&p, 2, UR_EXPERT, &rng, NULL);
     CHECK(m.from == fin && m.to == fin + 2);
 
@@ -448,6 +449,13 @@ static void test_twenty_rules(void)
     ur_init(&p, 0, UR_BOARD_TWENTY);
     CHECK(p.board == UR_BOARD_TWENTY && ur_off(&p) == 17 && ur_pos_valid(&p));
     CHECK(strcmp(UR_BOARDS[1].name, "Twenty Squares") == 0 && UR_BOARDS[1].cols == 12);
+    /* five pieces a side here (the tablet's five named pieces), seven on Ur */
+    CHECK(p.pool[0] == 5 && p.pool[1] == 5 && ur_pieces(1) == 5 && ur_pieces(0) == 7);
+    {
+        UrPos q = p;   /* a seven-piece Twenty Squares position (an old save) is not valid */
+        q.pool[0] = q.pool[1] = 7;
+        CHECK(!ur_pos_valid(&q));
+    }
 
     /* table queries, literal lists */
     for (int s = 0; s <= 17; s++) {
@@ -517,7 +525,7 @@ static void test_twenty_rules(void)
             UrPos q = pl == 0 ? mk(0, mine, 1, 0, theirs, 1, 0) : mk(1, theirs, 1, 0, mine, 1, 0);
             CHECK(has_move(&q, 1, s - 1, s));
             UrMoveResult r = ur_apply(&q, (UrMove){(uint8_t)(s - 1), (uint8_t)s}, 1);
-            CHECK(r.captured && !r.extra_turn && q.pool[pl ^ 1] == 7 && q.mask[pl ^ 1] == 0);
+            CHECK(r.captured && !r.extra_turn && q.pool[pl ^ 1] == 5 && q.mask[pl ^ 1] == 0);
             CHECK(ur_pos_valid(&q));
         }
     }
@@ -539,15 +547,19 @@ static void test_twenty_rules(void)
     }
     /* last piece off wins */
     int w[] = {15};
-    p = mk(1, NULL, 0, 0, w, 1, 6);
-    CHECK(ur_apply(&p, (UrMove){15, 17}, 2).winner == 1 && ur_winner(&p) == 1);
+    p = mk(1, NULL, 0, 0, w, 1, 4);
+    CHECK(ur_apply(&p, (UrMove){15, 17}, 2).winner == 1 && ur_winner(&p) == 1 && p.done[1] == 5);
+    /* the fourth piece off does not win */
+    int w4[] = {15, 9};
+    p = mk(1, NULL, 0, 0, w4, 2, 3);
+    CHECK(ur_apply(&p, (UrMove){15, 17}, 2).winner == -1 && ur_winner(&p) == -1 && p.done[1] == 4);
     /* lone last piece on 16: only a 1 moves */
     int l[] = {16};
-    p = mk(0, l, 1, 6, NULL, 0, 0);
+    p = mk(0, l, 1, 4, NULL, 0, 0);
     CHECK(count_moves(&p, 1) == 1 && count_moves(&p, 2) == 0 && count_moves(&p, 3) == 0 && count_moves(&p, 4) == 0);
     /* a pos with a bit above the track is invalid; so is a shared overlap on 16 */
     p = mk(0, NULL, 0, 0, NULL, 0, 0);
-    p.mask[0] = 1u << 17; p.pool[0] = 6;
+    p.mask[0] = 1u << 17; p.pool[0] = 4;
     CHECK(!ur_pos_valid(&p));
     int o1[] = {16}, o2[] = {16};
     p = mk(0, o1, 1, 0, o2, 1, 0);
