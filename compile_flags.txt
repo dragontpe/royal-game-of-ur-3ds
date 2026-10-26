@@ -1,0 +1,6 @@
+-std=gnu99
+-I/opt/devkitpro/libctru/include
+-D__3DS__
+-Isource
+-Igame
+-Ibuild

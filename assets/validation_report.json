@@ -1,0 +1,230 @@
+{
+  "ur_board.glb": {
+    "meshes": [
+      {
+        "name": "UR_Board_mesh.001",
+        "triangles": 284,
+        "exported_vertices": 416,
+        "bounds": [
+          [
+            -0.15049999952316284,
+            0.0,
+            -0.054999999701976776
+          ],
+          [
+            0.15049999952316284,
+            0.024000000208616257,
+            0.054999999701976776
+          ]
+        ]
+      }
+    ],
+    "images": [
+      {
+        "size": [
+          512,
+          512
+        ],
+        "mode": "RGB"
+      }
+    ],
+    "triangles_per_eye": 284,
+    "mesh_nodes": 1,
+    "extensions_required": [],
+    "bytes": 235392
+  },
+  "ur_complete_set.glb": {
+    "meshes": [
+      {
+        "name": "UR_Board_mesh",
+        "triangles": 284,
+        "exported_vertices": 416,
+        "bounds": [
+          [
+            -0.15049999952316284,
+            0.0,
+            -0.054999999701976776
+          ],
+          [
+            0.15049999952316284,
+            0.024000000208616257,
+            0.054999999701976776
+          ]
+        ]
+      },
+      {
+        "name": "UR_Counter_Dark_mesh",
+        "triangles": 124,
+        "exported_vertices": 100,
+        "bounds": [
+          [
+            -0.010300000198185444,
+            0.0,
+            -0.010300000198185444
+          ],
+          [
+            0.010300000198185444,
+            0.0032999999821186066,
+            0.010300000198185444
+          ]
+        ]
+      },
+      {
+        "name": "UR_Counter_Shell_mesh",
+        "triangles": 124,
+        "exported_vertices": 100,
+        "bounds": [
+          [
+            -0.010300000198185444,
+            0.0,
+            -0.010300000198185444
+          ],
+          [
+            0.010300000198185444,
+            0.0032999999821186066,
+            0.010300000198185444
+          ]
+        ]
+      },
+      {
+        "name": "UR_Die_mesh",
+        "triangles": 20,
+        "exported_vertices": 52,
+        "bounds": [
+          [
+            -0.008236476220190525,
+            0.0,
+            -0.009436258114874363
+          ],
+          [
+            0.008236476220190525,
+            0.012605570256710052,
+            0.004829802084714174
+          ]
+        ]
+      }
+    ],
+    "images": [
+      {
+        "size": [
+          512,
+          512
+        ],
+        "mode": "RGB"
+      },
+      {
+        "size": [
+          256,
+          256
+        ],
+        "mode": "RGB"
+      }
+    ],
+    "triangles_per_eye": 2100,
+    "mesh_nodes": 19,
+    "extensions_required": [],
+    "bytes": 272164
+  },
+  "ur_counter_dark.glb": {
+    "meshes": [
+      {
+        "name": "UR_Counter_Dark_mesh.001",
+        "triangles": 124,
+        "exported_vertices": 100,
+        "bounds": [
+          [
+            -0.010300000198185444,
+            0.0,
+            -0.010300000198185444
+          ],
+          [
+            0.010300000198185444,
+            0.0032999999821186066,
+            0.010300000198185444
+          ]
+        ]
+      }
+    ],
+    "images": [
+      {
+        "size": [
+          256,
+          256
+        ],
+        "mode": "RGB"
+      }
+    ],
+    "triangles_per_eye": 124,
+    "mesh_nodes": 1,
+    "extensions_required": [],
+    "bytes": 28324
+  },
+  "ur_counter_shell.glb": {
+    "meshes": [
+      {
+        "name": "UR_Counter_Shell_mesh.001",
+        "triangles": 124,
+        "exported_vertices": 100,
+        "bounds": [
+          [
+            -0.010300000198185444,
+            0.0,
+            -0.010300000198185444
+          ],
+          [
+            0.010300000198185444,
+            0.0032999999821186066,
+            0.010300000198185444
+          ]
+        ]
+      }
+    ],
+    "images": [
+      {
+        "size": [
+          256,
+          256
+        ],
+        "mode": "RGB"
+      }
+    ],
+    "triangles_per_eye": 124,
+    "mesh_nodes": 1,
+    "extensions_required": [],
+    "bytes": 28328
+  },
+  "ur_die.glb": {
+    "meshes": [
+      {
+        "name": "UR_Die_Tetrahedron_mesh.001",
+        "triangles": 20,
+        "exported_vertices": 52,
+        "bounds": [
+          [
+            -0.008236476220190525,
+            0.0,
+            -0.009436258114874363
+          ],
+          [
+            0.008236476220190525,
+            0.012605570256710052,
+            0.004829802084714174
+          ]
+        ]
+      }
+    ],
+    "images": [
+      {
+        "size": [
+          256,
+          256
+        ],
+        "mode": "RGB"
+      }
+    ],
+    "triangles_per_eye": 20,
+    "mesh_nodes": 1,
+    "extensions_required": [],
+    "bytes": 26256
+  }
+}

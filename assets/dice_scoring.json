@@ -1,0 +1,42 @@
+{
+  "coordinate_system": "glTF +Y up",
+  "rule": "Rotate all four direction vectors by die orientation; vertex with largest world +Y component is uppermost. Its marked state yields 1 or 0. Resolve ties only after settling.",
+  "vertices": [
+    {
+      "id": 0,
+      "marked": true,
+      "direction": [
+        -0.8221254342130007,
+        -0.31434207778732376,
+        0.47465653745885894
+      ]
+    },
+    {
+      "id": 1,
+      "marked": false,
+      "direction": [
+        0.8221254342130007,
+        -0.31434207778732376,
+        0.47465653745885894
+      ]
+    },
+    {
+      "id": 2,
+      "marked": false,
+      "direction": [
+        0.0,
+        -0.3143410945177554,
+        -0.9493101054436214
+      ]
+    },
+    {
+      "id": 3,
+      "marked": true,
+      "direction": [
+        0.0,
+        1.0,
+        0.0
+      ]
+    }
+  ]
+}

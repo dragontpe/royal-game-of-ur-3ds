@@ -1,0 +1,245 @@
+{
+  "coordinate_system": "glTF +Y up; meters",
+  "tiles": [
+    {
+      "id": "r0c0",
+      "row": 0,
+      "column": 0,
+      "motif": "rose",
+      "rosette": true,
+      "center_m": [
+        -0.13168749999999999,
+        0.024,
+        -0.03666666666666667
+      ]
+    },
+    {
+      "id": "r0c1",
+      "row": 0,
+      "column": 1,
+      "motif": "eyes",
+      "rosette": false,
+      "center_m": [
+        -0.0940625,
+        0.024,
+        -0.03666666666666667
+      ]
+    },
+    {
+      "id": "r0c2",
+      "row": 0,
+      "column": 2,
+      "motif": "five",
+      "rosette": false,
+      "center_m": [
+        -0.0564375,
+        0.024,
+        -0.03666666666666667
+      ]
+    },
+    {
+      "id": "r0c3",
+      "row": 0,
+      "column": 3,
+      "motif": "eyes",
+      "rosette": false,
+      "center_m": [
+        -0.01881250000000001,
+        0.024,
+        -0.03666666666666667
+      ]
+    },
+    {
+      "id": "r0c6",
+      "row": 0,
+      "column": 6,
+      "motif": "rose",
+      "rosette": true,
+      "center_m": [
+        0.0940625,
+        0.024,
+        -0.03666666666666667
+      ]
+    },
+    {
+      "id": "r0c7",
+      "row": 0,
+      "column": 7,
+      "motif": "star",
+      "rosette": false,
+      "center_m": [
+        0.13168749999999999,
+        0.024,
+        -0.03666666666666667
+      ]
+    },
+    {
+      "id": "r1c0",
+      "row": 1,
+      "column": 0,
+      "motif": "grid",
+      "rosette": false,
+      "center_m": [
+        -0.13168749999999999,
+        0.024,
+        0.0
+      ]
+    },
+    {
+      "id": "r1c1",
+      "row": 1,
+      "column": 1,
+      "motif": "five",
+      "rosette": false,
+      "center_m": [
+        -0.0940625,
+        0.024,
+        0.0
+      ]
+    },
+    {
+      "id": "r1c2",
+      "row": 1,
+      "column": 2,
+      "motif": "four",
+      "rosette": false,
+      "center_m": [
+        -0.0564375,
+        0.024,
+        0.0
+      ]
+    },
+    {
+      "id": "r1c3",
+      "row": 1,
+      "column": 3,
+      "motif": "rose",
+      "rosette": true,
+      "center_m": [
+        -0.01881250000000001,
+        0.024,
+        0.0
+      ]
+    },
+    {
+      "id": "r1c4",
+      "row": 1,
+      "column": 4,
+      "motif": "five",
+      "rosette": false,
+      "center_m": [
+        0.01881250000000001,
+        0.024,
+        0.0
+      ]
+    },
+    {
+      "id": "r1c5",
+      "row": 1,
+      "column": 5,
+      "motif": "four",
+      "rosette": false,
+      "center_m": [
+        0.0564375,
+        0.024,
+        0.0
+      ]
+    },
+    {
+      "id": "r1c6",
+      "row": 1,
+      "column": 6,
+      "motif": "eyes",
+      "rosette": false,
+      "center_m": [
+        0.0940625,
+        0.024,
+        0.0
+      ]
+    },
+    {
+      "id": "r1c7",
+      "row": 1,
+      "column": 7,
+      "motif": "five",
+      "rosette": false,
+      "center_m": [
+        0.13168749999999999,
+        0.024,
+        0.0
+      ]
+    },
+    {
+      "id": "r2c0",
+      "row": 2,
+      "column": 0,
+      "motif": "rose",
+      "rosette": true,
+      "center_m": [
+        -0.13168749999999999,
+        0.024,
+        0.036666666666666674
+      ]
+    },
+    {
+      "id": "r2c1",
+      "row": 2,
+      "column": 1,
+      "motif": "eyes",
+      "rosette": false,
+      "center_m": [
+        -0.0940625,
+        0.024,
+        0.036666666666666674
+      ]
+    },
+    {
+      "id": "r2c2",
+      "row": 2,
+      "column": 2,
+      "motif": "five",
+      "rosette": false,
+      "center_m": [
+        -0.0564375,
+        0.024,
+        0.036666666666666674
+      ]
+    },
+    {
+      "id": "r2c3",
+      "row": 2,
+      "column": 3,
+      "motif": "eyes",
+      "rosette": false,
+      "center_m": [
+        -0.01881250000000001,
+        0.024,
+        0.036666666666666674
+      ]
+    },
+    {
+      "id": "r2c6",
+      "row": 2,
+      "column": 6,
+      "motif": "rose",
+      "rosette": true,
+      "center_m": [
+        0.0940625,
+        0.024,
+        0.036666666666666674
+      ]
+    },
+    {
+      "id": "r2c7",
+      "row": 2,
+      "column": 7,
+      "motif": "star",
+      "rosette": false,
+      "center_m": [
+        0.13168749999999999,
+        0.024,
+        0.036666666666666674
+      ]
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+build/
+*.3dsx
+*.elf
+*.smdh
+*.cia
+romfs/scene.bin
+romfs/tex/
+tools/az/home/
+tools/az/azahar.log
+tools/az/winid
+tools/xcheck/.venv/
+host/build/

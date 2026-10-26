@@ -1,0 +1,58 @@
+{
+  "board_triangles": 284,
+  "counter_triangles_each": 124,
+  "die_triangles_each": 20,
+  "scene_triangles_per_eye": 2100,
+  "texture_dimensions": {
+    "board": [
+      512,
+      512
+    ],
+    "pieces": [
+      256,
+      256
+    ]
+  },
+  "units": "meters",
+  "gltf_axes": "+Y up, +X board length, +Z board width (Blender -Y)",
+  "baked_shading": "local AO plus soft orientation shading; no fixed moving-object shadows",
+  "renderer_attributes": [
+    "POSITION",
+    "TEXCOORD_0",
+    "NORMAL"
+  ],
+  "museum_tile_motifs": [
+    [
+      "rose",
+      "eyes",
+      "five",
+      "eyes",
+      null,
+      null,
+      "rose",
+      "star"
+    ],
+    [
+      "grid",
+      "five",
+      "four",
+      "rose",
+      "five",
+      "four",
+      "eyes",
+      "five"
+    ],
+    [
+      "rose",
+      "eyes",
+      "five",
+      "eyes",
+      null,
+      null,
+      "rose",
+      "star"
+    ]
+  ],
+  "runtime_objects": 19,
+  "stereo_triangles": 4200
+}
