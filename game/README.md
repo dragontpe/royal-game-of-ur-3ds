@@ -20,17 +20,18 @@ Same rules on both boards; only the track differs. `UrPos.board` selects it (`UR
 | Rosettes (extra roll) | 4, 8, 14 | 4, 8, 12, 16 |
 | Safe (shared rosettes) | 8 | 8, 12, 16 |
 | Columns | 8 | 12 |
+| Pieces per side (`ur_pieces()`) | 7 (Finkel) | 5 (RoyalUr aseb preset, as on the 177 BC tablet) |
 
-- 2 players, 7 pieces each, 4 binary dice. Roll 0..4 with weights 1,4,6,4,1 out of 16.
+- 2 players, 7 pieces each on Ur and 5 on Twenty Squares, 4 binary dice. Roll 0..4 with weights 1,4,6,4,1 out of 16.
 - Step 0 = start pool, 1..track = on the board, track + 1 = borne off. Player A's step s on a shared square is player B's step s.
 - A move takes the piece on step s (0 = enter from the pool, one move for all pool pieces) to s + roll. Illegal if: roll is 0; s + roll > track + 1 (exact bear-off); the destination holds your own piece; the destination is a safe square holding an enemy piece.
 - Landing on an enemy piece on a shared, non-safe square sends it back to its pool.
 - Landing on a rosette gives another roll. Roll 0, or no legal move, passes the turn. If any move exists you must move (capture is not forced).
 - No extra roll for capture or bear-off. If an extra roll has no legal move the turn passes.
-- First to bear off all 7 wins. Who starts is up to the caller (`ur_init(p, first, board)`).
+- First to bear off every piece wins. Who starts is up to the caller (`ur_init(p, first, board)`).
 
-The Twenty Squares geometry and path are RoyalUr's `AsebBoardShape` / `AsebPathPair`. RoyalUr's own
-aseb preset uses 5 pieces; we use 7 (the Finkel count), see the cross-check note below.
+The Twenty Squares geometry and path are RoyalUr's `AsebBoardShape` / `AsebPathPair`. Pieces match
+RoyalUr's own aseb preset too: 5 per side.
 
 ## API (`ur_rules.h`)
 
@@ -129,10 +130,8 @@ build/ladder <A> <B> <games> [seed] [board=0|1] [a.key=val b.key=val ...]   # fr
 Cross-check: `tools/xcheck/gen.c` (args: games, seed, board) plays random and AI-driven games and writes a
 transcript (legal moves, chosen move, resulting state per roll). `tools/xcheck/check.py` replays it in
 `royalur` and compares legal moves and state after every roll. Ur uses `Game.create_finkel()` (7 pieces,
-4 binary dice, Bell path, safe rosettes, extra roll on rosettes only). Twenty uses the library's aseb
-settings (`BoardType.ASEB` shape, `PathType.ASEB` paths, same dice and rosette flags) BUT with 7 starting
-pieces: `Game.create_aseb()` / `GameSettings.create_aseb()` hard-code 5 pieces, and every other setting
-matches our rules. `run.sh` runs both boards. Setup: `python3 -m venv tools/xcheck/.venv &&
+4 binary dice, Bell path, safe rosettes, extra roll on rosettes only). Twenty uses the library's stock
+`Game.create_aseb()` preset unmodified (aseb shape and paths, same dice and rosette flags, 5 pieces). `run.sh` runs both boards. Setup: `python3 -m venv tools/xcheck/.venv &&
 tools/xcheck/.venv/bin/pip install royalur` (`run.sh` does this if the venv is missing).
 royalur 0.0.6 note: `RuleSet.paths` has no `return`, so `check.py` reads `rules._paths`.
 The library always lets LIGHT (player 0) start, so transcripts always start with player 0.
@@ -142,16 +141,17 @@ The library always lets LIGHT (player 0) start, so transcripts always start with
 Ladder: sides and first mover alternate; 600 games per pairing per board (the earlier Ur-only run was
 2000 games: Expert vs Medium 68.1%, Medium vs Beginner 98.2%, Expert vs Beginner 99.4%, Beginner vs
 uniform random 87.2%). The Ur eval is unchanged, so Ur is the same engine; the 600-game rerun below
-agrees within its CI. Eval weights were NOT retuned for Twenty Squares.
+agrees within its CI. Eval weights were NOT retuned for Twenty Squares. Twenty was rerun with 5 pieces
+(1200 games per pairing, v0.11); with 7 pieces it had been 70.7% and 98.2%. Shorter games mean more
+dice luck, so the gaps shrink.
 
 | Board | Match | First wins | 95% CI (Wilson) |
 |---|---|---|---|
 | Ur | Expert vs Medium | 68.5% (411/600) | 64.7-72.1% |
 | Ur | Medium vs Beginner | 98.0% (588/600) | 96.5-98.9% |
 | Ur | Expert vs Beginner | 99.7% (598/600) | 98.8-99.9% |
-| Twenty | Expert vs Medium | 70.7% (424/600) | 66.9-74.2% |
-| Twenty | Medium vs Beginner | 98.2% (589/600) | 96.7-99.0% |
-| Twenty | Expert vs Beginner | 99.3% (596/600) | 98.3-99.7% |
+| Twenty (5 pieces) | Expert vs Medium | 63.3% (760/1200) | 60.6-66.0% |
+| Twenty (5 pieces) | Medium vs Beginner | 92.7% (1112/1200) | 91.1-94.0% |
 
 Nodes per move (only moves with a real choice; Expert times are inflated by 6 runs in parallel):
 
