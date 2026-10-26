@@ -86,8 +86,12 @@ def piece(c, cx, cy, r, player, shadow=False):
         c.circle(cx + dx, cy + dy, r * 0.13, dot)
 
 
-def die(c, cx, cy, s, marked, body, mark):
+def die(c, cx, cy, s, marked, body, mark, rim=None):
     h = s * 0.866
+    if rim:
+        g = 1.6
+        c.poly([(cx, cy - h * 0.62 - g * 1.6), (cx - s / 2 - g * 1.4, cy + h * 0.38 + g * 0.8),
+                (cx + s / 2 + g * 1.4, cy + h * 0.38 + g * 0.8)], rim)
     c.poly([(cx, cy - h * 0.62), (cx - s / 2, cy + h * 0.38), (cx + s / 2, cy + h * 0.38)], body)
     if marked:
         c.circle(cx, cy - h * 0.62 + s * 0.2, s * 0.13, mark)

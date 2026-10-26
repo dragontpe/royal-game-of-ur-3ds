@@ -7,8 +7,8 @@
  * log to sdmc:/3ds/ur-3ds/robot.txt. Saves go to the fuzz folder. */
 #include <stdarg.h>
 
-#define ROBOT_SPEED 3.0f
-#define ROBOT_AI_GAMES 6
+#define ROBOT_SPEED 4.0f
+#define ROBOT_AI_GAMES 3     /* one per level, then a resume test (game 3) and a two-player game (game 4) */
 
 static FILE *rlog;
 static float r_wait = 3.5f, r_still;
@@ -16,7 +16,7 @@ static int r_step, r_games, r_errors, r_shot_delay = -1;
 static char r_shot_name[40];
 static u32 r_seed = 20261026;
 static bool r_done, r_paused_once, r_seen[8];
-static int r_last_phase = -1, r_turns, r_level;
+static int r_last_phase = -1, r_turns, r_level, r_rs;
 static char r_last_msg[64];
 static float r_ai_ms_sum[3], r_ai_ms_max[3];
 static int r_ai_n[3];
@@ -118,12 +118,17 @@ static void robot_menu(int scr)
 	default:
 		if (scr != SCR_TITLE)
 			break;
-		if (r_games < ROBOT_AI_GAMES) {
-			r_level = r_games % 3;
+		if (r_games == ROBOT_AI_GAMES && r_rs == 4) {
+			rshot("44_title_continue");
+			q_tap(80, 70);                                                   /* Continue */
+			r_rs = 5;
+			r_wait = 1.2f;
+		} else if (r_games <= ROBOT_AI_GAMES) {
+			r_level = r_games < ROBOT_AI_GAMES ? r_games % 3 : 1;
 			q_tap(230, 70);                                                  /* Play */
 			r_step = 100;
 			r_wait = 1.0f;
-		} else if (r_games == ROBOT_AI_GAMES) {
+		} else if (r_games == ROBOT_AI_GAMES + 1) {
 			q_tap(80, 130);                                                  /* Two players */
 			r_wait = 1.0f;
 		} else if (!r_done) {
@@ -220,6 +225,19 @@ static void robot_play(void)
 	if (r_wait > 0 || d.paused)
 		return;
 
+	if (d.phase == PH_WAIT_ROLL && r_games == ROBOT_AI_GAMES && r_rs == 0 && r_turns > 8) {
+		q_key(KEY_START);                                                    /* pause, then How to play */
+		r_rs = 1;
+		r_wait = 0.6f;
+		return;
+	}
+	if (r_rs == 5) {
+		rshot("45_resumed");
+		rlogf("resume test: back in game %d at turn %d", r_games, r_turns);
+		r_rs = 6;
+		r_wait = 0.6f;
+		return;
+	}
 	if (d.phase == PH_WAIT_ROLL) {
 		if (!r_paused_once && r_games == 0 && r_turns > 6) {
 			r_paused_once = true;
@@ -287,7 +305,18 @@ static void robot_input(Input *in, int scr, float dt)
 		PlayDebug d;
 		play_debug(&d);
 		if (d.paused) {
-			if (r_wait <= 0) {
+			if (r_wait > 0)
+				return;
+			if (r_rs == 1) {
+				rshot("42_pause_menu");
+				q_tap(160, 135);                                             /* How to play */
+				r_rs = 2;
+				r_wait = 0.8f;
+			} else if (r_rs == 3) {
+				q_tap(160, 181);                                             /* Quit to title */
+				r_rs = 4;
+				r_wait = 1.0f;
+			} else {
 				rshot("09_pause");
 				q_key(KEY_START);
 				r_wait = 0.6f;
@@ -313,6 +342,13 @@ static void robot_input(Input *in, int scr, float dt)
 	}
 	if (r_wait > 0 || r_done)
 		return;
+	if (scr == SCR_PAGES && r_rs == 2) {
+		rshot("43_rules_from_pause");
+		q_key(KEY_B);
+		r_rs = 3;
+		r_wait = 0.8f;
+		return;
+	}
 	if (scr == SCR_LEVEL)
 		robot_level();
 	else

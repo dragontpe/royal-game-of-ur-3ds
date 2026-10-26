@@ -5,6 +5,7 @@
  * The rules live in game/ur_rules; this file only sequences them. */
 #include "play.h"
 
+#include <math.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -170,7 +171,7 @@ bool play_resume(void)
 	G.fortune = ur_rng_below(&G.rng, NFORTUNES);
 	start_common();
 	G.timer = 0.9f;
-	say("Welcome back", "The game is where you left it", false);
+	say("Welcome back", "Right where you left off", false);
 	return true;
 }
 
@@ -628,7 +629,7 @@ static void draw_action_row(void)
 		spr_btn(art_btn_roll_idx, 200, 186);
 	} else if (show_dice) {
 		for (int i = 0; i < 4; i++)
-			spr(G.marked[i] ? art_die_m_idx : art_die_u_idx, 182 + i * 21, 198);
+			spr(G.marked[i] ? art_die_m_idx : art_die_u_idx, 175 + i * 23, 196);
 		panel(P_BOX3, 272, 190, 32, 34);
 		text(TS_BIG, 288, 207, A_CENTER, "%d", G.roll);
 	}
@@ -652,20 +653,20 @@ static void draw_pause(void)
 
 static void draw_over(void)
 {
-	draw_fade(0.78f, 320, 240, COL_SCRIM);
+	draw_rect(0, 0, 320, 240, COL_GROUND);
 	bool you = G.mode == MODE_AI && G.winner == 0;
 	char head[32];
 	if (G.mode == MODE_AI)
 		snprintf(head, sizeof(head), you ? "You win!" : "%s wins", level_name[G.level]);
 	else
 		snprintf(head, sizeof(head), "%s wins!", name_of(G.winner));
-	text(TS_HUGE, 160, 52, A_CENTER, "%s", head);
-	spr(art_rosette_big_idx, 160 - 24, 78);
+	text(TS_HUGE, 160, 40, A_CENTER, "%s", head);
+	spr(art_rosette_big_idx, 160 - 24, 70);
 	if (G.mode == MODE_AI)
-		text(TS_TEXT, 160, 146, A_CENTER, "Record vs %s:  %d won,  %d lost", level_name[G.level],
+		text(TS_TEXT, 160, 140, A_CENTER, "Record vs %s:  %d won,  %d lost", level_name[G.level],
 		     settings.wins[G.level], settings.losses[G.level]);
 	else
-		text(TS_TEXT, 160, 146, A_CENTER, "Home: %d to %d", G.pos.done[0], G.pos.done[1]);
+		text(TS_TEXT, 160, 140, A_CENTER, "Home: %d to %d", G.pos.done[0], G.pos.done[1]);
 	if (G.over_t < 1.0f)
 		return;
 	static const char *const items[2] = { "Play again", "Title" };
@@ -696,8 +697,27 @@ void play_draw_bottom(void)
 		draw_pause();
 }
 
+/* Falling rosettes over the room when a human wins. */
+static void celebrate(void)
+{
+	float t = G.over_t - 0.9f;
+	if (t < 0 || t > 7)
+		return;
+	for (int i = 0; i < 22; i++) {
+		u32 h = (u32)i * 2654435761u;
+		float x0 = (float)(h % 400), speed = 34 + (h >> 8) % 40, delay = ((h >> 16) % 100) / 60.0f;
+		float y = -24 + (t - delay) * speed;
+		if (y < -24 || y > 250)
+			continue;
+		float x = x0 + 10 * sinf((t + i) * 1.7f);
+		spr_rot(art_rosette_small_idx, x, y, (t + i) * (i % 2 ? 1.5f : -1.2f));
+	}
+}
+
 void play_draw_top(void)
 {
+	if (G.phase == PH_OVER && (G.mode == MODE_2P || G.winner == 0))
+		celebrate();
 	if (G.phase == PH_OVER && G.over_t > 1.0f) {
 		bool you = G.mode == MODE_AI && G.winner == 0;
 		char head[32];

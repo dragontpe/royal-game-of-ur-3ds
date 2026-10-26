@@ -7,11 +7,11 @@ export DEVKITPRO=/opt/devkitpro DEVKITARM=/opt/devkitpro/devkitARM
 export PATH=$DEVKITPRO/tools/bin:$DEVKITARM/bin:$PATH
 MAKEROM=$HOME/gammon-x/vendor/tools/Project_CTR/makerom/bin/makerom
 BANNERTOOL=$HOME/gammon-x/vendor/tools/bannertool/output/manual/bannertool
-VERSION_MAJOR=0 VERSION_MINOR=0 VERSION_MICRO=1
+VERSION_MAJOR=0 VERSION_MINOR=9 VERSION_MICRO=0
 
 make >/dev/null
 mkdir -p build/cia
-$BANNERTOOL makesmdh -s "Royal Game of Ur" -l "The Royal Game of Ur (test build)" -p "Frank" \
+$BANNERTOOL makesmdh -s "Royal Game of Ur" -l "The Royal Game of Ur" -p "No Banners Software" \
     -i tools/cia/icon.png -o build/cia/icon.icn >/dev/null
 $BANNERTOOL makebanner -i tools/cia/banner.png -a tools/cia/banner.wav -o build/cia/banner.bnr >/dev/null
 $MAKEROM -f cia -o ur-3ds.cia -elf ur-3ds.elf -rsf tools/cia/ur.rsf -target t -exefslogo \

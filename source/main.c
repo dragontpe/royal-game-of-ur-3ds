@@ -66,33 +66,6 @@ static Pose pose_room(float t)
 	return p;
 }
 
-static float smooth(float a, float b, float t)
-{
-	t = (t - a) / (b - a);
-	t = t < 0 ? 0 : t > 1 ? 1 : t;
-	return t * t * (3 - 2 * t);
-}
-
-/* Boot splash: open on the lion frieze, then tilt down to the board. */
-static Pose pose_splash(float st)
-{
-	float drift = smooth(0, 3.0f, st);
-	Pose frieze = { FVec3_New(-0.06f + 0.10f * drift, 0.30f, 0.26f), FVec3_New(0.02f * drift, 0.44f, -0.42f),
-	                FVec3_New(0, 1, 0), 38.0f };
-	float yaw = C3D_AngleFromDegrees(20.0f), pitch = C3D_AngleFromDegrees(35.5f), dist = 0.58f;
-	C3D_FVec c = FVec3_New(0, 0.105f, -0.07f);
-	Pose board = { FVec3_New(c.x + dist * cosf(pitch) * sinf(yaw), c.y + dist * sinf(pitch),
-	                         c.z + dist * cosf(pitch) * cosf(yaw)),
-	               c, FVec3_New(0, 1, 0), ROOM_FOVY };
-	float g = smooth(2.6f, 4.6f, st);
-	Pose p;
-	p.eye = FVec3_Add(frieze.eye, FVec3_Scale(FVec3_Subtract(board.eye, frieze.eye), g));
-	p.target = FVec3_Add(frieze.target, FVec3_Scale(FVec3_Subtract(board.target, frieze.target), g));
-	p.up = FVec3_New(0, 1, 0);
-	p.fovy = frieze.fovy + (board.fovy - frieze.fovy) * g;
-	return p;
-}
-
 static C3D_FVec vlerp(C3D_FVec a, C3D_FVec b, float t)
 {
 	return FVec3_Add(a, FVec3_Scale(FVec3_Subtract(b, a), t));
@@ -179,41 +152,72 @@ static void settings_draw(void)
 	text(TS_TILE, 56, 215, A_CENTER, "Back");
 }
 
-/* ---- boot splash ---- */
+/* ---- boot splash: painted key art on top, title and copyright below ---- */
 
-static float splash_t;
+static float splash_t, leave_t = -1, fade_in;
+static C2D_SpriteSheet keyart;
 
 static void splash_update(const Input *in, float dt)
 {
 	splash_t += dt;
+	if (leave_t >= 0) {
+		leave_t += dt;
+		if (leave_t > 0.35f) {
+			screen = SCR_TITLE;
+			fade_in = 1;
+			leave_t = -1;
+		}
+		return;
+	}
 	if (splash_t > 0.8f && ((in->down & (KEY_A | KEY_START)) || in->touch_down)) {
 		sfx_play(SFX_TICK, 0, 1);
-		screen = SCR_TITLE;
+		leave_t = 0;
 	}
+}
+
+static float splash_black(void)
+{
+	float f = 1.0f - splash_t / 1.2f;
+	if (leave_t >= 0)
+		f = leave_t / 0.35f;
+	return f;
+}
+
+/* A slow pan and zoom across the 640x384 painting (Ken Burns). */
+static void splash_draw_top(void)
+{
+	if (!keyart)
+		return;
+	C2D_Image img = C2D_SpriteSheetGetImage(keyart, 0);
+	const Tex3DS_SubTexture *ps = img.subtex;
+	float e = splash_t / 14.0f;
+	e = e > 1 ? 1 : e * (2 - e);
+	float w = 640 - 110 * e, h = w * 0.6f;
+	float cx = 320 + 40 * e, cy = 192 + 18 * e;
+	float x0 = cx - w / 2, y0 = cy - h / 2;
+	Tex3DS_SubTexture sub;
+	sub.width = (u16)w;
+	sub.height = (u16)h;
+	sub.left = ps->left + (ps->right - ps->left) * x0 / 640.0f;
+	sub.right = ps->left + (ps->right - ps->left) * (x0 + w) / 640.0f;
+	sub.top = ps->top + (ps->bottom - ps->top) * y0 / 384.0f;
+	sub.bottom = ps->top + (ps->bottom - ps->top) * (y0 + h) / 384.0f;
+	img.subtex = &sub;
+	C2D_DrawImageAt(img, 0, 0, 0.5f, NULL, 400.0f / w, 240.0f / h);
+	draw_fade(splash_black(), 400, 240, C2D_Color32(0, 0, 0, 255));
 }
 
 static void splash_draw_bottom(void)
 {
 	draw_rect(0, 0, 320, 240, COL_GROUND);
-	spr_rot(art_rosette_huge_idx, 160, 100, splash_t * 0.25f);
-	if (splash_t > 4.8f && fmodf(splash_t - 4.8f, 1.6f) < 1.25f)
-		text(TS_HEAD, 160, 186, A_CENTER, "Tap to begin");
+	float u = (splash_t - 0.5f) / 0.8f;
+	u = u < 0 ? 0 : u > 1 ? 1 : u;
+	float back = 1 + 2.2f * (u - 1) * (u - 1) * (u - 1) + 1.2f * (u - 1) * (u - 1); /* ease-out-back */
+	spr(art_logo_idx, 10, -90 + 130 * back);
+	if (splash_t > 1.6f && fmodf(splash_t - 1.6f, 1.6f) < 1.25f)
+		text(TS_HEAD, 160, 170, A_CENTER, "Tap to begin");
 	text(TS_BODY, 160, 226, A_CENTER, "\u00a9 2026 No Banners Software");
-	draw_fade(1.0f - splash_t / 1.0f, 320, 240, C2D_Color32(0, 0, 0, 255));
-}
-
-/* Logo drops in after the fade, slightly in front of the screen in 3D. */
-static void splash_draw_top(int eye, float slider)
-{
-	if (splash_t > 4.2f) {
-		float u = (splash_t - 4.2f) / 0.7f;
-		u = u > 1 ? 1 : u;
-		float back = 1 + 2.2f * (u - 1) * (u - 1) * (u - 1) + 1.2f * (u - 1) * (u - 1); /* ease-out-back */
-		float y = -60 + 66 * back;
-		float par = slider * 2.5f * (eye == 0 ? 1 : -1);
-		spr(art_logo_idx, 50 + par, y);
-	}
-	draw_fade(1.0f - splash_t / 1.4f, 400, 240, C2D_Color32(0, 0, 0, 255));
+	draw_fade(splash_black(), 320, 240, C2D_Color32(0, 0, 0, 255));
 }
 
 static void start_game(PlayMode mode, UrLevel level)
@@ -365,6 +369,7 @@ int main(void)
 		ok = false;
 		snprintf(err, sizeof(err), "world init failed");
 	}
+	keyart = C2D_SpriteSheetLoad("romfs:/gfx/keyart.t3x");
 	if (ok && draw_init() != 0) {
 		ok = false;
 		snprintf(err, sizeof(err), "art or fonts failed");
@@ -383,7 +388,7 @@ int main(void)
 
 	C2D_TextBuf dbg_buf = C2D_TextBufNew(512);
 	bool show_dbg = false;
-	float blend = 1, clock = 0, splash_w = 1;
+	float blend = 1, clock = 0;
 	u64 last = svcGetSystemTick();
 	double frame_ms = 16.7, worst_ms = 0;
 	int shot_n = 0;
@@ -476,9 +481,7 @@ int main(void)
 		blend += (room ? 1.0f : -1.0f) * dt / 0.9f;
 		blend = blend < 0 ? 0 : blend > 1 ? 1 : blend;
 
-		splash_w += ((screen == SCR_SPLASH ? 1.0f : 0.0f) - splash_w) * (dt * 2.5f > 1 ? 1 : dt * 2.5f);
-		Pose top = pose_top(), rpose = pose_room(clock), spl = pose_splash(splash_t);
-		Pose rv = pose_lerp(&rpose, &spl, splash_w);
+		Pose top = pose_top(), rv = pose_room(clock);
 		Pose cam = pose_lerp(&top, &rv, blend);
 		float focus = FVec3_Distance(cam.eye, cam.target);
 		float slider = osGet3DSliderState();
@@ -498,14 +501,17 @@ int main(void)
 			Mtx_PerspStereoTilt(&proj, C3D_AngleFromDegrees(cam.fovy), C3D_AspectRatioTop, 0.01f, 2.5f,
 			                    eye == 0 ? -iod : iod, focus, false);
 			render_camera(&proj, &view);
-			world_draw(FMT_RGB565, tex, blend > 0.5f);
+			if (screen != SCR_SPLASH)
+				world_draw(FMT_RGB565, tex, blend > 0.5f);
 
 			C2D_Prepare();
 			C2D_SceneBegin(t);
 			if (screen == SCR_SPLASH)
-				splash_draw_top(eye, slider);
+				splash_draw_top();
 			else if (screen != SCR_PLAY && blend > 0.6f)
 				spr(art_logo_idx, 50, 6);
+			if (fade_in > 0)
+				draw_fade(fade_in, 400, 240, C2D_Color32(0, 0, 0, 255));
 			if (screen == SCR_PLAY)
 				play_draw_top();
 			if (show_dbg) {
@@ -538,8 +544,12 @@ int main(void)
 			case SCR_PAGES: pages_draw(); break;
 			case SCR_PLAY: play_draw_bottom(); break;
 			}
+			if (fade_in > 0)
+				draw_fade(fade_in, 320, 240, C2D_Color32(0, 0, 0, 255));
 		}
 		C3D_FrameEnd(0);
+		if (fade_in > 0)
+			fade_in -= dt / 0.5f;
 
 		if (want_shot) {
 			char name[32];
@@ -552,6 +562,8 @@ int main(void)
 	}
 
 	C2D_TextBufDelete(dbg_buf);
+	if (keyart)
+		C2D_SpriteSheetFree(keyart);
 	ai_worker_exit();
 	sfx_exit();
 	draw_exit();

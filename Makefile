@@ -34,7 +34,7 @@ include $(DEVKITARM)/3ds_rules
 TARGET		:=	ur-3ds
 APP_TITLE	:=	Royal Game of Ur
 APP_DESCRIPTION	:=	The Royal Game of Ur
-APP_AUTHOR	:=	Frank
+APP_AUTHOR	:=	No Banners Software
 BUILD		:=	build
 SOURCES		:=	source game
 DATA		:=	data

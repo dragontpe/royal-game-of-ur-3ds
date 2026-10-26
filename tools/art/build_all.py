@@ -14,6 +14,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import ROOT, THEME
 import fonts
 import ui_art
+import keyart  # noqa: F401  (writes gfx/keyart on import)
 
 fonts.build()
 

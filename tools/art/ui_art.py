@@ -46,8 +46,8 @@ def build():
     sprite('tgt', 31, 31, lambda c: c.rect(2, 2, 27, 27, None, r=3, outline=T['target'], width=2.5))
     sprite('tgt_sel', 31, 31, lambda c: (c.rect(1, 1, 29, 29, (*T['target'], 70), r=4),
                                          c.rect(1, 1, 29, 29, None, r=4, outline=T['target'], width=3.5)))
-    sprite('die_m', 20, 18, lambda c: die(c, 10, 10, 18, True, INK, SHELL_HI))
-    sprite('die_u', 20, 18, lambda c: die(c, 10, 10, 18, False, INK, SHELL_HI))
+    sprite('die_m', 22, 21, lambda c: die(c, 11, 12, 17, True, INK, SHELL_HI, SHELL_LO))
+    sprite('die_u', 22, 21, lambda c: die(c, 11, 12, 17, False, INK, SHELL_HI, SHELL_LO))
 
     def roll_btn(c):
         c.rect(0, 0, 104, 46, T['btn_lo'], r=3)
@@ -85,8 +85,8 @@ def build():
     sprite('pc_d_xs', 20, 20, lambda c: piece(c, 10, 10, 8.5, 1))
     sprite('ring_xs', 24, 24, lambda c: (c.circle(12, 12, 11, T['select']), c.circle(12, 12, 9, (0, 0, 0, 0))))
     sprite('tgt_xs', 21, 21, lambda c: c.rect(1.5, 1.5, 18, 18, None, r=2.5, outline=T['target'], width=2))
-    sprite('die_m_l', 34, 30, lambda c: die(c, 17, 17, 30, True, INK, SHELL_HI))
-    sprite('die_u_l', 34, 30, lambda c: die(c, 17, 17, 30, False, INK, SHELL_HI))
+    sprite('die_m_l', 36, 33, lambda c: die(c, 18, 19, 29, True, INK, SHELL_HI, SHELL_LO))
+    sprite('die_u_l', 36, 33, lambda c: die(c, 18, 19, 29, False, INK, SHELL_HI, SHELL_LO))
 
     # path diagram for the rules page: light's track with arrows
     def path(c, CELL=S):
